@@ -15,8 +15,19 @@ Aide scolaire interactive pour Hidaya (classe de **5e / EB7** — 11-12 ans).
 **double-clique sur `index.html`**. Tout fonctionne sans connexion Internet. Aucune installation,
 aucun compte, aucune publicité.
 
-## 🇫🇷 Français — ce que l'application contient
+## 📚 Matières
 
+### 🔢 Mathématiques — 1AC (Maroc)
+**21 chapitres** du programme de 1re année collège, importés depuis la base
+[`base-1ac-maroc`](https://github.com/glaadadil/base-1ac-maroc) : opérations, fractions,
+relatifs, puissances, développement/factorisation, équations, géométrie (angles, triangle,
+symétrie, parallélogramme, cercle, solides), proportionnalité, statistiques.
+- Cours complet par chapitre + **fiche résumé**
+- **375 exercices** par niveaux (application directe → raisonnement) avec **corrigés cachés**
+- **Devoir par chapitre** avec barème et corrigé caché
+- Formules rendues avec **KaTeX** (nécessite Internet ; hors-ligne les formules restent lisibles en notation texte)
+
+### 📖 Français — 5e / EB7
 La base est alignée sur la collection **« Le Français au Collège » 5e/EB7** (Kédémos Education,
 méthode du Liban) — avec des contenus pédagogiques originaux :
 
@@ -86,9 +97,10 @@ avec les `domaine` correspondants (ajouter le domaine dans `DOMAINES` et `ORDRE_
 ## 🗺️ Feuille de route
 
 - [x] Français — 5e/EB7 (20 unités + grammaire + conjugaison + orthographe + évaluations)
-- [ ] Mathématiques
-- [ ] Anglais
-- [ ] Sciences
+- [x] Mathématiques — 1AC Maroc (21 chapitres, 375 exercices)
+- [ ] Arabe — 1AC Maroc
+- [ ] Anglais — 1AC Maroc
+- [ ] Éducation islamique — 1AC Maroc
 - [ ] Mode « dictée lue par l'ordinateur » (synthèse vocale)
 
 ## 📄 Notes

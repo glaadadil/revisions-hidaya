@@ -6,8 +6,10 @@
 
 /* ---------- Fusion des données ---------- */
 const MATIERES = [
-  { id: "francais", nom: "Français", icone: "📖", desc: "20 unités du manuel + grammaire, conjugaison, orthographe", ok: true },
-  { id: "maths",    nom: "Mathématiques", icone: "🔢", desc: "Bientôt disponible…", ok: false },
+  { id: "francais", nom: "Français", icone: "📖", desc: "20 unités du manuel + grammaire, conjugaison, orthographe", ok: true,
+    domaines: ["textes", "grammaire", "conjugaison", "orthographe", "defis"] },
+  { id: "maths", nom: "Mathématiques", icone: "🔢", desc: "21 chapitres du programme 1AC (Maroc)", ok: true,
+    domaines: ["maths"] },
   { id: "anglais",  nom: "Anglais", icone: "🇬🇧", desc: "Bientôt disponible…", ok: false },
   { id: "sciences", nom: "Sciences", icone: "🔬", desc: "Bientôt disponible…", ok: false }
 ];
@@ -17,10 +19,18 @@ const DOMAINES = {
   grammaire:   { nom: "Grammaire",           icone: "🧩", desc: "La phrase, les classes, les fonctions" },
   conjugaison: { nom: "Conjugaison",         icone: "⏰", desc: "Les temps avec tableaux et exercices" },
   orthographe: { nom: "Orthographe & Vocabulaire", icone: "🔤", desc: "Homophones, accords, mots" },
-  defis:       { nom: "Défis & Évaluations", icone: "🎯", desc: "Évaluations blanches et dictées" }
+  defis:       { nom: "Défis & Évaluations", icone: "🎯", desc: "Évaluations blanches et dictées" },
+  maths:       { nom: "Programme 1AC",       icone: "📐", desc: "21 chapitres : numérique, algèbre, géométrie, statistiques" }
 };
 
-const ORDRE_DOMAINES = ["textes", "grammaire", "conjugaison", "orthographe", "defis"];
+const ORDRE_DOMAINES = ["textes", "grammaire", "conjugaison", "orthographe", "defis", "maths"];
+
+/* Domaines à afficher pour une matière */
+function domainesDe(idMatiere) {
+  const m = MATIERES.find(x => x.id === idMatiere);
+  if (m && m.domaines) return m.domaines;
+  return ORDRE_DOMAINES.filter(d => leconsDuDomaine(d).length > 0);
+}
 
 /* ---------- Progression (localStorage) ---------- */
 const CLE_PROGRESS = "hidaya_progress_v1";
@@ -199,7 +209,7 @@ function pageMatiere(idMatiere) {
   APP.innerHTML = `
     <h1 class="titre-page">${m.icone} ${m.nom}</h1>
     <p class="sous-titre">Que veux-tu réviser aujourd'hui ?</p>
-    ${ORDRE_DOMAINES.map(did => {
+    ${domainesDe(idMatiere).map(did => {
       const d = DOMAINES[did];
       const lecons = leconsDuDomaine(did);
       const faites = lecons.filter(l => etoilesLecon(l.id) > 0).length;
@@ -220,7 +230,8 @@ function pageMatiere(idMatiere) {
 function pageDomaine(idDomaine) {
   const d = DOMAINES[idDomaine];
   if (!d) return pageMatiere("francais");
-  majBoutonRetour("#/matiere/francais");
+  const matiere = MATIERES.find(m => domainesDe(m.id).includes(idDomaine)) || MATIERES[0];
+  majBoutonRetour("#/matiere/" + matiere.id);
   document.title = d.nom + " — Révisions d'Hidaya";
   const lecons = leconsDuDomaine(idDomaine);
 
@@ -280,7 +291,7 @@ function rendreLecon(l) {
       <h1>${l.icone ? l.icone + " " : ""}${esc(l.titre)}</h1>
       <div class="meta">
         ${l.texte ? "Texte : « " + esc(l.texte) + " » · " : ""}
-        ${l.theme ? esc(l.theme) + " · " : ""}${l.niveau || "5e / EB7"}
+        ${l.theme ? esc(l.theme) + " · " : ""}${l.niveau || "5e / EB7"}${l.duree ? " · ⏱ " + esc(l.duree) : ""}
       </div>
     </header>
     <div class="lecon-objectifs">
@@ -301,6 +312,19 @@ function rendreLecon(l) {
   if (ongletActif === "cours") rendreCours(zone, l);
   else if (ongletActif === "exercices") rendreExercices(zone, l);
   else rendreDevoir(zone, l);
+  appliquerKaTeX(zone);
+}
+
+/* Rendu des formules mathématiques (KaTeX, si disponible) */
+function appliquerKaTeX(cible) {
+  if (!window.renderMathInElement || !cible) return;
+  window.renderMathInElement(cible, {
+    delimiters: [
+      { left: "$$", right: "$$", display: true },
+      { left: "$", right: "$", display: false }
+    ],
+    throwOnError: false
+  });
 }
 
 /* ---------- Onglet Cours ---------- */
@@ -315,6 +339,8 @@ function blocCours(b) {
   switch (b.t) {
     case "h":  return `<div class="bloc-cours"><h2>${esc(b.x)}</h2>${b.sous ? `<p>${b.sous}</p>` : ""}</div>`;
     case "h3": return `<h3>${esc(b.x)}</h3>`;
+    case "htmlcard": return `<div class="bloc-cours"><h2>${b.titre}</h2>${b.x}</div>`;
+    case "htmltable": return `<div class="tableau-wrap">${b.x}</div>`;
     case "p":  return `<p>${b.x}</p>`;
     case "ul": return `<ul>${b.items.map(i => `<li>${i}</li>`).join("")}</ul>`;
     case "ol": return `<ol>${b.items.map(i => `<li>${i}</li>`).join("")}</ol>`;
@@ -341,7 +367,7 @@ function rendreExercices(zone, l) {
 }
 
 function renduExercice(e, i, l) {
-  const num = `<span class="exo-num">${i + 1}</span>`;
+  const num = `<span class="exo-num">${e.badge || i + 1}</span>`;
   const consigne = `<div class="exo-tete">${num}<span class="exo-consigne">${esc(e.consigne)}</span></div>`;
   let corps = "";
   if (e.type === "qcm") {
@@ -483,6 +509,7 @@ function corrigerExercice(e, i, l) {
       majMiniScoreOnglet(st);
     }));
     res.dataset.fait = "1";
+    appliquerKaTeX(res);
     return;
   }
 
@@ -538,6 +565,7 @@ function rendreDevoir(zone, l) {
         <button class="btn btn-oui btn-petit" id="dv-oui">✔ Devoir terminé (+15 ⭐)</button>
       </div>`;
     zc.dataset.fait = "1";
+    appliquerKaTeX(zc);
     document.getElementById("dv-oui").addEventListener("click", () => {
       enregistrerDevoir(l.id, true);
       ajouterPoints(15);
