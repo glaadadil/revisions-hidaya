@@ -4,27 +4,51 @@
    ============================================================ */
 "use strict";
 
-/* ---------- Fusion des données ----------
-   Pour activer une nouvelle matière : ajouter son fichier de données
-   (js/data-<matiere>.js) dans index.html, puis passer ok: true ici.
-   Le convertisseur convert_base.py génère les fichiers de données
-   depuis une base au format « base-1ac-maroc » (docs/XX-matiere/…). */
-const MATIERES = [
-  { id: "francais", nom: "Français", icone: "📖", desc: "20 unités du manuel + grammaire, conjugaison, orthographe", ok: true,
-    domaines: ["textes", "grammaire", "conjugaison", "orthographe", "defis"] },
-  { id: "maths", nom: "Mathématiques", icone: "🔢", desc: "21 chapitres du programme 1AC (Maroc)", ok: true,
-    domaines: ["maths"] },
-  { id: "arabe", nom: "Langue arabe", icone: "🕌", desc: "En préparation — base à fournir", ok: false,
-    domaines: ["arabe"] },
-  { id: "islamique", nom: "Éducation islamique", icone: "🕋", desc: "En préparation — base à fournir", ok: false,
-    domaines: ["islamique"] },
-  { id: "anglais", nom: "Anglais", icone: "🇬🇧", desc: "En préparation — base à fournir", ok: false,
-    domaines: ["anglais"] },
-  { id: "sciences", nom: "Sciences", icone: "🔬", desc: "Physique-chimie & SVT — base à fournir", ok: false,
-    domaines: ["sciences"] },
-  { id: "francais1ac", nom: "Français 1AC (Maroc)", icone: "🇫🇷", desc: "Programme marocain — base à fournir", ok: false,
-    domaines: ["francais1ac"] }
-];
+/* ---------- Profils des matières ----------
+   Chaque matière est une branche avec sa propre identité :
+   ses couleurs, son slogan, sa langue et SA méthode de révision. */
+const PROFILS = {
+  francais:    { nom: "Français", icone: "📖", couleur: "#7c3aed", couleur2: "#ec4899", tint: "#ede9fe",
+                 etiquette: "Lecture & expression", rtl: false,
+                 methode: "① Lis le cours en surlignant les règles. ② Fais les exercices <strong>par écrit</strong>, sans regarder la correction. ③ Compare, puis note tes erreurs pour ne plus les refaire." },
+  maths:       { nom: "Mathématiques", icone: "🔢", couleur: "#2563eb", couleur2: "#0ea5e9", tint: "#dbeafe",
+                 etiquette: "Calcul & logique", rtl: false,
+                 methode: "① Refais l'exemple du cours sur papier sans le regarder. ② Traite les exercices <strong>en détaillant chaque étape</strong>. ③ Vérifie ligne par ligne avec le corrigé." },
+  arabe:       { nom: "اللغة العربية", nomFr: "Langue arabe", icone: "🕌", couleur: "#0f766e", couleur2: "#14b8a6", tint: "#ccfbf1",
+                 etiquette: "قراءة · قواعد · تعبير", rtl: true,
+                 methode: "① اقرأ الدرس بصوت عالٍ مرتين. ② احفظ المفردات بالبطاقات 🃏 كل يوم خمس دقائق. ③ أجب عن التمارين كتابةً ثم قارن بالتصحيح." },
+  islamique:   { nom: "التربية الإسلامية", nomFr: "Éducation islamique", icone: "🕋", couleur: "#047857", couleur2: "#34d399", tint: "#d1fae5",
+                 etiquette: "التزكية · الاقتداء · الاستجابة · الحكمة", rtl: true,
+                 methode: "① احفظ الآيات والأحاديث بالتكرار اليومي القصير. ② استعمل البطاقات 🃏 لتثبيت المصطلحات والمفاهيم. ③ أجب عن أسئلة الفهم كتابةً، ثم صحّح." },
+  anglais:     { nom: "English", nomFr: "Anglais", icone: "🇬🇧", couleur: "#d97706", couleur2: "#fbbf24", tint: "#fef3c7",
+                 etiquette: "Words · Grammar · Say it aloud!", rtl: false,
+                 methode: "① Learn the new words with the flashcards 🃏 — say each word <strong>aloud</strong>. ② Read the grammar box twice. ③ Do the exercises, then check yourself." },
+  francais1ac: { nom: "Français 1AC", icone: "🇫🇷", couleur: "#be185d", couleur2: "#f472b6", tint: "#fce7f3",
+                 etiquette: "Langue, textes & expression (Maroc)", rtl: false,
+                 methode: "① Lis le texte et le cours en repérant les notions clés. ② Mémorise les définitions avec les flashcards 🃏. ③ Rédige les exercices puis compare avec le corrigé." },
+  svt:         { nom: "SVT", nomFr: "Sciences de la vie et de la Terre", icone: "🌱", couleur: "#16a34a", couleur2: "#4ade80", tint: "#dcfce7",
+                 etiquette: "Comprendre le vivant et la Terre", rtl: false,
+                 methode: "① Explique le phénomène <strong>avec tes propres mots</strong> avant tout. ② Retiens les définitions avec les flashcards 🃏. ③ Refais les schémas et les classements de mémoire." },
+  pc:          { nom: "Physique-Chimie", icone: "⚗️", couleur: "#0891b2", couleur2: "#22d3ee", tint: "#cffafe",
+                 etiquette: "Matière, énergie & univers", rtl: false,
+                 methode: "① Comprends la loi ou l'expérience avant de calculer. ② Rédige les exercices <strong>avec unités et étapes</strong>. ③ Compare au corrigé et refais ceux qui ont échoué le lendemain." },
+  ss:          { nom: "الاجتماعيات", nomFr: "Sciences sociales", icone: "🌍", couleur: "#9333ea", couleur2: "#c084fc", tint: "#f3e8ff",
+                 etiquette: "التاريخ · الجغرافيا · التربية المدنية", rtl: true,
+                 methode: "① اقرأ الدرس وحدّد التواريخ والمصطلحات والأسماء. ② احفظها بالبطاقات 🃏. ③ أعد شرح الدرس بأسلوبك ثم قارن بالنص." },
+  info:        { nom: "Informatique", icone: "💻", couleur: "#475569", couleur2: "#94a3b8", tint: "#e2e8f0",
+                 etiquette: "Digital & citoyenneté", rtl: false,
+                 methode: "① Comprends les notions et les mots-clés. ② Teste les manipulations sur un appareil si possible. ③ Vérifie-toi avec les exercices." }
+};
+
+const ORDRE_MATIERES = ["francais", "maths", "arabe", "islamique", "anglais", "francais1ac", "svt", "pc", "ss", "info"];
+
+/* Les matières issues de la base 1AC ont un seul domaine « programme » ;
+   le français (manuel Kédémos 5e) garde ses 5 domaines. */
+const DOMAINES_PAR_MATIERE = {
+  francais: ["textes", "grammaire", "conjugaison", "orthographe", "defis"]
+};
+function profilDe(idMatiere) { return PROFILS[idMatiere] || PROFILS.francais; }
+function domainesDe(idMatiere) { return DOMAINES_PAR_MATIERE[idMatiere] || [idMatiere]; }
 
 const DOMAINES = {
   textes:      { nom: "Textes & Expression", icone: "📜", desc: "Les 20 unités du manuel, thème par thème" },
@@ -32,22 +56,16 @@ const DOMAINES = {
   conjugaison: { nom: "Conjugaison",         icone: "⏰", desc: "Les temps avec tableaux et exercices" },
   orthographe: { nom: "Orthographe & Vocabulaire", icone: "🔤", desc: "Homophones, accords, mots" },
   defis:       { nom: "Défis & Évaluations", icone: "🎯", desc: "Évaluations blanches et dictées" },
-  maths:       { nom: "Programme 1AC",       icone: "📐", desc: "21 chapitres : numérique, algèbre, géométrie, statistiques" },
-  arabe:       { nom: "Programme 1AC",       icone: "📜", desc: "Chapitres du programme" },
-  islamique:   { nom: "Programme 1AC",       icone: "🕋", desc: "Chapitres du programme" },
-  anglais:     { nom: "Programme 1AC",       icone: "🌐", desc: "Chapitres du programme" },
-  sciences:    { nom: "Programme 1AC",       icone: "⚗️", desc: "Chapitres du programme" },
-  francais1ac: { nom: "Programme 1AC",       icone: "📖", desc: "Chapitres du programme" }
+  maths:       { nom: "Programme 1AC",       icone: "📐", desc: "Numérique, algèbre, géométrie, statistiques" },
+  arabe:       { nom: "الوحدات", nomFr: "Unités du programme", icone: "📜", rtl: true, desc: "النصوص · الدروس اللغوية · التعبير والإنشاء" },
+  islamique:   { nom: "المداخل", nomFr: "Unités du programme", icone: "🕋", rtl: true, desc: "التزكية · الاقتداء · الاستجابة · القسط · الحكمة" },
+  anglais:     { nom: "Units 1–10",          icone: "🌐", desc: "Vocabulary · Grammar · Phonics · Reading · Writing" },
+  francais1ac: { nom: "Unités",              icone: "📖", desc: "Textes, langue et expression du programme marocain" },
+  svt:         { nom: "Parties du programme", icone: "🌿", desc: "Sciences de la vie · Sciences de la Terre" },
+  pc:          { nom: "Parties du programme", icone: "⚗️", desc: "La matière · L'énergie · L'univers" },
+  ss:          { nom: "المكونات", nomFr: "Histoire · Géo · Éd. civique", icone: "🌍", rtl: true, desc: "الحضارات · المجال · السلوك المدني" },
+  info:        { nom: "Unités",              icone: "💻", desc: "Outils numériques, citoyenneté, Scratch" }
 };
-
-const ORDRE_DOMAINES = ["textes", "grammaire", "conjugaison", "orthographe", "defis", "maths"];
-
-/* Domaines à afficher pour une matière */
-function domainesDe(idMatiere) {
-  const m = MATIERES.find(x => x.id === idMatiere);
-  if (m && m.domaines) return m.domaines;
-  return ORDRE_DOMAINES.filter(d => leconsDuDomaine(d).length > 0);
-}
 
 /* ---------- Progression (localStorage) ---------- */
 const CLE_PROGRESS = "hidaya_progress_v1";
@@ -61,8 +79,9 @@ function sauverProgress(p) { localStorage.setItem(CLE_PROGRESS, JSON.stringify(p
 function majScore() {
   const p = chargerProgress();
   const el = document.getElementById("score-badge");
-  el.textContent = "⭐ " + p.points;
-  el.classList.remove("pulse"); void el.offsetWidth; el.classList.add("pulse");
+  el.textContent = p.points;
+  const pill = el.closest(".score-pill");
+  if (pill) { pill.classList.remove("pulse"); void pill.offsetWidth; pill.classList.add("pulse"); }
 }
 function ajouterPoints(n) {
   const p = chargerProgress();
@@ -142,20 +161,61 @@ function confettis() {
   }
 }
 
+/* ---------- Statut d'accomplissement d'une leçon ---------- */
+/* "aucune" : jamais faite · "encours" : commencée, incomplète · "terminee" : tout accompli */
+function statutLecon(l) {
+  const st = chargerProgress().lecons[l.id];
+  if (!st || (!st.exosFaits && !st.devoir)) return "aucune";
+  const nExos = (l.exercices || []).length;
+  const exosFaits = st.exosFaits || 0;
+  const devoirFait = !l.devoir || st.devoir;
+  if (nExos > 0 && exosFaits >= nExos && devoirFait) return "terminee";
+  return "encours";
+}
+const STATUTS = {
+  aucune:   { icone: "",           libelle: "Non commencée", classe: "" },
+  encours:  { icone: "◐",          libelle: "En cours",      classe: "encours" },
+  terminee: { icone: "✓",          libelle: "Terminée",      classe: "terminee" }
+};
+
+function leconsTerminees(dom) {
+  return leconsDuDomaine(dom).filter(l => statutLecon(l) === "terminee").length;
+}
+
+/* ---------- Menu latéral : état actif ---------- */
+function majSidebar(route) {
+  document.querySelectorAll(".side-lien[data-route]").forEach(a => {
+    a.classList.toggle("actif", a.dataset.route === route);
+  });
+  document.body.classList.remove("sidebar-ouverte");
+}
+
 /* ---------- Routage ---------- */
 const APP = document.getElementById("app");
-let routePrecedente = "";
+let ongletActif = "cours";
+let filtreLecons = "toutes";
 
 function naviguer() {
   const hash = location.hash || "#/";
   const parts = hash.slice(2).split("/").filter(Boolean);
   window.scrollTo(0, 0);
-  if (parts.length === 0) return pageAccueil();
-  if (parts[0] === "reglages") return pageReglages();
-  if (parts[0] === "matiere" && parts[1]) return pageMatiere(parts[1]);
-  if (parts[0] === "domaine" && parts[1]) return pageDomaine(parts[1]);
-  if (parts[0] === "lecon" && parts[1]) return pageLecon(parts[1]);
+  filtreLecons = "toutes";
+  if (parts.length === 0) { majSidebar("accueil"); return pageAccueil(); }
+  if (parts[0] === "reglages") { majSidebar("reglages"); return pageReglages(); }
+  if (parts[0] === "planning") { majSidebar("planning"); return pagePlanning(); }
+  if (parts[0] === "matiere" && parts[1]) { majSidebar(parts[1]); return pageMatiere(parts[1]); }
+  if (parts[0] === "domaine" && parts[1]) { majSidebar(matiereDuDomaine(parts[1])); return pageDomaine(parts[1]); }
+  if (parts[0] === "lecon" && parts[1]) {
+    const l = INDEX_LECONS[parts[1]];
+    majSidebar(l ? l.domaine : "");
+    return pageLecon(parts[1]);
+  }
+  majSidebar("accueil");
   return pageAccueil();
+}
+
+function matiereDuDomaine(idDomaine) {
+  return ORDRE_MATIERES.find(id => domainesDe(id).includes(idDomaine)) || "";
 }
 
 function aller(hash) { location.hash = hash; }
@@ -169,44 +229,58 @@ function majBoutonRetour(cible) {
 /* ---------- Page : Accueil ---------- */
 function pageAccueil() {
   majBoutonRetour(null);
-  document.title = "Les Révisions d'Hidaya 📚";
+  document.title = "Les Révisions d'Hidaya";
   const p = chargerProgress();
   const badges = calculerBadges(p);
   const dernier = localStorage.getItem("hidaya_last");
   const derniereLecon = dernier && INDEX_LECONS[dernier] ? INDEX_LECONS[dernier] : null;
+  const nTerminees = Object.keys(INDEX_LECONS).filter(id => {
+    const l = INDEX_LECONS[id];
+    return leconsDuDomaine(l.domaine).includes(l) && statutLecon(l) === "terminee";
+  }).length;
+  const nDevoirs = Object.values(p.lecons).filter(s => s.devoir).length;
+
   APP.innerHTML = `
-    <section class="accueil-hero">
-      <span class="hero-emoji" style="top:14px;left:22px">✨</span>
-      <span class="hero-emoji" style="bottom:18px;right:26px;animation-delay:1.2s">📚</span>
-      <span class="hero-emoji" style="top:40px;right:80px;animation-delay:.6s">🌟</span>
-      <h1>Bonjour Hidaya ! 👋</h1>
-      <p>Choisis la matière que tu veux préparer, puis la leçon que tu as vue en classe —
-         ou celle qui arrive. Tu trouveras le cours, des exercices et des devoirs
-         <span class="marque">avec les corrections cachées</span> : tu ne les regardes que quand tu as fini !</p>
-      <div class="accueil-stats">
-        <span class="stat-chip">⭐ ${p.points} points</span>
-        <span class="stat-chip">🏅 ${badges.gagnes.length} badge${badges.gagnes.length > 1 ? "s" : ""}</span>
-        <span class="stat-chip">📚 ${compterLeconsFaites()} leçon${compterLeconsFaites() > 1 ? "s" : ""} révisée${compterLeconsFaites() > 1 ? "s" : ""}</span>
-      </div>
-      <div class="badges-ligne">
-        ${badges.tous.map(b => `<span class="badge ${badges.gagnes.includes(b.id) ? "" : "verrouille"}" title="${esc(b.titre)}">${b.icone} ${esc(b.nom)}</span>`).join("")}
-      </div>
-    </section>
+    <div class="accueil-bonjour">
+      <h1>Bonjour Hidaya</h1>
+      <p>Choisis ta matière, puis la leçon vue en classe — ou celle qui arrive.
+         Chaque leçon affiche clairement ce que tu as accompli et ce qu'il te reste à faire.</p>
+    </div>
+
+    <div class="statistiques">
+      <div class="stat-carte"><div class="chiffre">${p.points}</div><div class="etiquette">Points cumulés</div></div>
+      <div class="stat-carte"><div class="chiffre">${nTerminees}<span style="color:var(--gris);font-size:1rem;font-weight:600"> / ${Object.keys(INDEX_LECONS).length}</span></div><div class="etiquette">Leçons terminées</div></div>
+      <div class="stat-carte"><div class="chiffre">${nDevoirs}</div><div class="etiquette">Devoirs rendus</div></div>
+      <div class="stat-carte"><div class="chiffre">${badges.gagnes.length}<span style="color:var(--gris);font-size:1rem;font-weight:600"> / ${badges.tous.length}</span></div><div class="etiquette">Récompenses</div></div>
+    </div>
+
     ${derniereLecon ? `
-    <a class="carte-continuer" href="#/lecon/${derniereLecon.id}">
-      <span class="play">▶</span>
-      <span>Reprends ta révision
-        <span class="petit">${esc(derniereLecon.icone || "")} ${esc(derniereLecon.titre)}</span>
-      </span>
+    <a class="reprendre" href="#/lecon/${derniereLecon.id}">
+      <span class="rond"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z"/></svg></span>
+      <span><span class="titre-f">Reprendre là où je m'étais arrêtée</span><br>
+      <span class="sous-f">${esc(derniereLecon.titre)}</span></span>
     </a>` : ""}
-    <section class="grille-cartes">
-      ${MATIERES.map(m => `
-        <a class="carte-matiere ${m.ok ? "" : "bientot"}" ${m.ok ? `href="#/matiere/${m.id}"` : ""}>
-          ${m.ok ? "" : `<span class="badge-verrou">🔒 bientôt</span>`}
-          <span class="rond-icone">${m.icone}</span>
-          <span class="nom">${m.nom}</span>
-          <span class="desc">${m.desc}</span>
-        </a>`).join("")}
+
+    <a class="reprendre carte-planning" href="#/planning">
+      <span class="rond planning-rond">🗓️</span>
+      <span><span class="titre-f">Mon planning de la semaine</span><br>
+      <span class="sous-f">Organise toi-même tes révisions, jour par jour ${nbTachesPlanning() ? "· " + nbTachesPlanning() + " séance" + (nbTachesPlanning() > 1 ? "s" : "") + " programmée" + (nbTachesPlanning() > 1 ? "s" : "") : "· commence maintenant"}</span></span>
+    </a>
+
+    <section class="grille-matieres">
+      ${ORDRE_MATIERES.map(mid => {
+        const pr = profilDe(mid);
+        const doms = domainesDe(mid);
+        const total = doms.reduce((n, d) => n + leconsDuDomaine(d).length, 0);
+        const faites = doms.reduce((n, d) => n + leconsTerminees(d), 0);
+        const pct = total ? Math.round(100 * faites / total) : 0;
+        return `<a class="carte-matiere" href="#/matiere/${mid}" style="--acc:${pr.couleur};--acc2:${pr.couleur2};--tint:${pr.tint}">
+          <div class="mat-tete"><span class="mat-icone" style="background:${pr.tint}">${pr.icone}</span>
+            <span><span class="mat-nom">${pr.nom}${pr.nomFr ? `<br><span class="mat-nomfr">${pr.nomFr}</span>` : ""}</span><br><span class="mat-desc">${total} leçon${total > 1 ? "s" : ""} · ${pr.etiquette}</span></span></div>
+          <div class="prog-ligne"><span>Progression</span><span class="pourcent">${pct}%</span></div>
+          <div class="barre-prog"><div class="rempli" style="width:${pct}%;background:linear-gradient(90deg,${pr.couleur},${pr.couleur2})"></div></div>
+        </a>`;
+      }).join("")}
     </section>
   `;
 }
@@ -226,6 +300,174 @@ function calculerBadges(p) {
     { id: "dv5",  nom: "5 devoirs",  icone: "✍️", titre: "Faire 5 devoirs", test: pp => Object.values(pp.lecons).filter(s => s.devoir).length >= 5 }
   ];
   return { tous, gagnes: tous.filter(b => b.test(p)).map(b => b.id) };
+}
+
+/* ---------- Planning hebdomadaire ----------
+   Hidaya construit elle-même son programme de révisions :
+   elle ajoute des leçons jour par jour, l'app suit l'avancement. */
+const JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+const CLE_PLANNING = "hidaya_planning_v1";
+
+function semaineActuelle() {
+  const d = new Date();
+  const jan1 = new Date(d.getFullYear(), 0, 1);
+  const sem = Math.ceil((((d - jan1) / 86400000) + jan1.getDay() + 1) / 7);
+  return d.getFullYear() + "-S" + sem;
+}
+function chargerPlanning() {
+  try {
+    const p = JSON.parse(localStorage.getItem(CLE_PLANNING)) || {};
+    if (p.semaine !== semaineActuelle()) {
+      // nouvelle semaine : on garde le programme, on remet les cases à zéro
+      Object.values(p.taches || {}).forEach(liste => liste.forEach(t => t.fait = false));
+      p.semaine = semaineActuelle();
+      localStorage.setItem(CLE_PLANNING, JSON.stringify(p));
+    }
+    return p;
+  } catch { return {}; }
+}
+function sauverPlanning(p) { p.semaine = semaineActuelle(); localStorage.setItem(CLE_PLANNING, JSON.stringify(p)); }
+function nbTachesPlanning() {
+  const p = chargerPlanning();
+  return Object.values(p.taches || {}).reduce((n, l) => n + l.length, 0);
+}
+
+function pagePlanning() {
+  majBoutonRetour("#/");
+  document.title = "Mon planning — Révisions d'Hidaya";
+  const p = chargerPlanning();
+  p.taches = p.taches || {};
+  const total = nbTachesPlanning();
+  const faites = Object.values(p.taches).reduce((n, l) => n + l.filter(t => t.fait).length, 0);
+  const pct = total ? Math.round(100 * faites / total) : 0;
+
+  APP.innerHTML = `
+    <h1 class="titre-page">🗓️ Mon planning de la semaine</h1>
+    <p class="sous-titre">Semaine ${semaineActuelle()} — c'est <strong>toi</strong> qui organises tes révisions !
+       Ajoute les leçons que tu veux travailler chaque jour, coche-les quand c'est fait.</p>
+
+    <div class="planning-recap">
+      <div class="planning-barre"><div class="rempli" style="width:${pct}%"></div></div>
+      <span>${faites}/${total} séance${total > 1 ? "s" : ""} faite${faites > 1 ? "s" : ""} (${pct}%)</span>
+    </div>
+
+    <div class="planning-outils">
+      <select id="pl-matiere" class="champ-select">
+        ${ORDRE_MATIERES.map(mid => `<option value="${mid}">${profilDe(mid).nomFr || profilDe(mid).nom}</option>`).join("")}
+      </select>
+      <select id="pl-lecon" class="champ-select champ-large"></select>
+      <button class="btn btn-primaire btn-petit" id="pl-ajouter">+ Ajouter au jour…</button>
+      <select id="pl-jour" class="champ-select">
+        ${JOURS.map(j => `<option>${j}</option>`).join("")}
+      </select>
+      <button class="btn btn-secondaire btn-petit" id="pl-suggerer" title="L'app choisit une leçon non terminée">💡 Suggérer</button>
+    </div>
+    <p class="sous-titre" style="margin-top:-6px">💡 Astuce : choisis une leçon puis le jour, ou laisse l'app te suggérer ce qu'il reste à faire.</p>
+
+    <div class="planning-grille">
+      ${JOURS.map(jour => {
+        const taches = p.taches[jour] || [];
+        const nFaites = taches.filter(t => t.fait).length;
+        return `
+        <div class="jour-carte" data-jour="${jour}">
+          <div class="jour-tete"><b>${jour}</b><span class="jour-compte">${nFaites}/${taches.length}</span></div>
+          ${taches.length === 0 ? `<div class="jour-vide">Rien de prévu 🌴</div>` : `
+          <ul class="jour-taches">
+            ${taches.map((t, i) => {
+              const l = INDEX_LECONS[t.id];
+              if (!l) return "";
+              const pr = profilDe(matiereDuDomaine(l.domaine) || "francais");
+              return `<li class="tache ${t.fait ? "faite" : ""}">
+                <button class="tache-coche" data-jour="${jour}" data-i="${i}" title="Marquer faite">${t.fait ? "✓" : ""}</button>
+                <span class="tache-txt" dir="auto"><span class="tache-pt" style="background:${pr.couleur}"></span>${esc(l.titre)}</span>
+                <button class="tache-suppr" data-jour="${jour}" data-i="${i}" title="Retirer">✕</button>
+              </li>`;
+            }).join("")}
+          </ul>`}
+        </div>`;
+      }).join("")}
+    </div>
+  `;
+
+  // Remplir le sélecteur de leçons selon la matière choisie
+  const selM = document.getElementById("pl-matiere");
+  const selL = document.getElementById("pl-lecon");
+  function remplirLecons() {
+    const mid = selM.value;
+    const lecons = domainesDe(mid).flatMap(d => leconsDuDomaine(d))
+      .slice().sort((a, b) => (a.unite || 0) - (b.unite || 0));
+    selL.innerHTML = lecons.map(l => `<option value="${l.id}">${l.tag ? l.tag + " — " : ""}${esc(l.titre.slice(0, 60))}</option>`).join("");
+  }
+  remplirLecons();
+  selM.addEventListener("change", remplirLecons);
+
+  document.getElementById("pl-ajouter").addEventListener("click", () => {
+    const idLecon = selL.value;
+    if (!idLecon) return;
+    const pp = chargerPlanning();
+    pp.taches = pp.taches || {};
+    const jour = document.getElementById("pl-jour").value;
+    pp.taches[jour] = pp.taches[jour] || [];
+    if (!pp.taches[jour].some(t => t.id === idLecon)) pp.taches[jour].push({ id: idLecon, fait: false });
+    sauverPlanning(pp);
+    majCompteursSidebar();
+    pagePlanning();
+  });
+
+  document.getElementById("pl-suggerer").addEventListener("click", () => {
+    const pp = chargerPlanning();
+    pp.taches = pp.taches || {};
+    const deja = new Set(Object.values(pp.taches).flat().map(t => t.id));
+    const candidates = Object.values(INDEX_LECONS).filter(l => statutLecon(l) !== "terminee" && !deja.has(l.id));
+    if (candidates.length === 0) { confettis(); return; }
+    const choix = candidates[Math.floor(Math.random() * candidates.length)];
+    const jour = document.getElementById("pl-jour").value;
+    pp.taches[jour] = pp.taches[jour] || [];
+    pp.taches[jour].push({ id: choix.id, fait: false });
+    sauverPlanning(pp);
+    majCompteursSidebar();
+    pagePlanning();
+    const carte = document.querySelector(`.jour-carte[data-jour="${jour}"]`);
+    if (carte) carte.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  document.querySelectorAll(".tache-coche").forEach(b => b.addEventListener("click", () => {
+    const pp = chargerPlanning();
+    const t = (pp.taches[b.dataset.jour] || [])[+b.dataset.i];
+    if (!t) return;
+    t.fait = !t.fait;
+    if (t.fait) { ajouterPoints(5); confettis(); }
+    else ajouterPoints(-5);
+    sauverPlanning(pp);
+    pagePlanning();
+  }));
+
+  document.querySelectorAll(".tache-suppr").forEach(b => b.addEventListener("click", () => {
+    const pp = chargerPlanning();
+    (pp.taches[b.dataset.jour] || []).splice(+b.dataset.i, 1);
+    sauverPlanning(pp);
+    majCompteursSidebar();
+    pagePlanning();
+  }));
+}
+
+/* Compteurs de la barre latérale (leçons terminées / total) */
+function majCompteursSidebar() {
+  ORDRE_MATIERES.forEach(mid => {
+    const el = document.getElementById("cpt-" + mid);
+    if (!el) return;
+    const doms = domainesDe(mid);
+    const total = doms.reduce((n, d) => n + leconsDuDomaine(d).length, 0);
+    const faites = doms.reduce((n, d) => n + leconsTerminees(d), 0);
+    el.textContent = total ? faites + "/" + total : "";
+  });
+  const pl = document.getElementById("cpt-planning");
+  if (pl) {
+    const n = nbTachesPlanning();
+    const p = chargerPlanning();
+    const faites = Object.values(p.taches || {}).reduce((n2, l) => n2 + l.filter(t => t.fait).length, 0);
+    pl.textContent = n ? faites + "/" + n : "";
+  }
 }
 
 /* ---------- Page : Réglages ---------- */
@@ -286,29 +528,45 @@ function pageReglages() {
 
 /* ---------- Page : Matière ---------- */
 function pageMatiere(idMatiere) {
-  const m = MATIERES.find(x => x.id === idMatiere);
-  if (!m) return pageAccueil();
-  majBoutonRetour("#/");
-  document.title = m.nom + " — Révisions d'Hidaya";
-  if (!m.ok) return pageAccueil();
-
+  const pr = profilDe(idMatiere);
+  if (!PROFILS[idMatiere]) return pageAccueil();
+  majBoutonRetour(null);
+  const titre = pr.nom + (pr.nomFr ? ` — ${pr.nomFr}` : "");
+  document.title = (pr.nomFr || pr.nom) + " — Révisions d'Hidaya";
+  const dirAttr = pr.rtl ? ' dir="rtl"' : "";
+  const methodeTxt = pr.methode;
   APP.innerHTML = `
-    <h1 class="titre-page">${m.icone} ${m.nom}</h1>
-    <p class="sous-titre">Que veux-tu réviser aujourd'hui ?</p>
+    <header class="matiere-entete" style="background:linear-gradient(135deg,${pr.couleur},${pr.couleur2})"${dirAttr}>
+      <span class="matiere-grande-icone">${pr.icone}</span>
+      <h1>${pr.nom}${pr.nomFr ? ` <span class="matiere-nomfr">— ${pr.nomFr}</span>` : ""}</h1>
+      <div class="matiere-etiquette">${pr.etiquette}</div>
+    </header>
+    <div class="methode-box"${dirAttr}>
+      <strong>💡 Comment bien réviser ${pr.nomFr ? esc(pr.nomFr) : "cette matière"} :</strong>
+      <p>${methodeTxt}</p>
+    </div>
+    <h2 class="titre-section"${dirAttr}>Choisis ton domaine de révision</h2>
+    <div class="liste-domaines" style="--acc:${pr.couleur};--acc2:${pr.couleur2};--tint:${pr.tint}">
     ${domainesDe(idMatiere).map(did => {
       const d = DOMAINES[did];
       const lecons = leconsDuDomaine(did);
-      const faites = lecons.filter(l => etoilesLecon(l.id) > 0).length;
+      const faites = leconsTerminees(did);
+      const pct = lecons.length ? Math.round(100 * faites / lecons.length) : 0;
+      const dDir = d.rtl ? ' dir="rtl"' : "";
       return `
         <a class="carte-domaine" href="#/domaine/${did}">
-          <span class="icone">${d.icone}</span>
-          <span class="infos">
-            <span class="nom">${d.nom}</span><br>
+          <span class="dom-icone" style="background:${pr.tint}">${d.icone}</span>
+          <span class="infos"${dDir}>
+            <span class="nom">${d.nom}${d.nomFr ? ` <span class="nomfr">(${d.nomFr})</span>` : ""}</span><br>
             <span class="desc">${d.desc}</span>
           </span>
-          <span class="nb">${faites}/${lecons.length} ✅</span>
+          <span class="dom-prog">
+            <span class="prog-ligne"><span>${faites}/${lecons.length} terminées</span><span class="pourcent">${pct}%</span></span>
+            <span class="barre-prog"><span class="rempli" style="display:block;width:${pct}%;background:linear-gradient(90deg,${pr.couleur},${pr.couleur2})"></span></span>
+          </span>
         </a>`;
     }).join("")}
+    </div>
   `;
 }
 
@@ -316,52 +574,84 @@ function pageMatiere(idMatiere) {
 function pageDomaine(idDomaine) {
   const d = DOMAINES[idDomaine];
   if (!d) return pageMatiere("francais");
-  const matiere = MATIERES.find(m => domainesDe(m.id).includes(idDomaine)) || MATIERES[0];
-  majBoutonRetour("#/matiere/" + matiere.id);
-  document.title = d.nom + " — Révisions d'Hidaya";
+  const idM = matiereDuDomaine(idDomaine) || "francais";
+  const pr = profilDe(idM);
+  majBoutonRetour("#/matiere/" + idM);
+  document.title = (d.nomFr || d.nom) + " — Révisions d'Hidaya";
   const lecons = leconsDuDomaine(idDomaine);
+  const nTerm = leconsTerminees(idDomaine);
+  const dirAttr = pr.rtl || d.rtl ? ' dir="rtl"' : "";
+
+  const compte = { toutes: lecons.length, faire: lecons.length - nTerm, terminees: nTerm };
+  const visibles = lecons.filter(l =>
+    filtreLecons === "toutes" ? true :
+    filtreLecons === "terminees" ? statutLecon(l) === "terminee" :
+    statutLecon(l) !== "terminee");
 
   // Regroupement par thème si présent
-  const avecTheme = lecons.some(l => l.theme);
-  let html = `<h1 class="titre-page">${d.icone} ${d.nom}</h1><p class="sous-titre">${d.desc}</p>`;
+  const avecTheme = visibles.some(l => l.theme);
+  let html = `
+    <h1 class="titre-page" style="color:${pr.couleur}"${dirAttr}>${d.nom}${d.nomFr ? ` <span style="font-size:1rem;color:var(--gris);font-weight:600">(${d.nomFr})</span>` : ""}</h1>
+    <p class="sous-titre"${dirAttr}>${d.desc} — ${nTerm}/${lecons.length} leçon${lecons.length > 1 ? "s" : ""} terminée${nTerm > 1 ? "s" : ""}.</p>
+    <div class="filtres">
+      ${["toutes", "faire", "terminees"].map(f => `
+        <button class="filtre ${filtreLecons === f ? "actif" : ""}" data-filtre="${f}">
+          ${f === "toutes" ? "Toutes" : f === "faire" ? "À faire" : "Terminées"} · ${compte[f]}
+        </button>`).join("")}
+    </div>`;
 
-  if (avecTheme) {
+  if (visibles.length === 0) {
+    html += `<div class="vide-info">Aucune leçon dans cette catégorie. Bravo ! 🎉</div>`;
+  } else if (avecTheme) {
     const themes = [];
-    lecons.forEach(l => { if (!themes.includes(l.theme)) themes.push(l.theme); });
+    visibles.forEach(l => { if (!themes.includes(l.theme)) themes.push(l.theme); });
     html += themes.map(th => `
       <div class="theme-bloc">
         <div class="theme-titre">${esc(th)}</div>
-        <div class="grille-lecons">
-          ${lecons.filter(l => l.theme === th).map(l => carteLecon(l)).join("")}
+        <div class="liste-lecons">
+          ${visibles.filter(l => l.theme === th).map(l => rangLecon(l)).join("")}
         </div>
       </div>`).join("");
   } else {
-    html += `<div class="grille-lecons">${lecons.map(l => carteLecon(l)).join("")}</div>`;
+    html += `<div class="liste-lecons">${visibles.map(l => rangLecon(l)).join("")}</div>`;
   }
   APP.innerHTML = html;
+
+  document.querySelectorAll(".filtre").forEach(b => {
+    b.addEventListener("click", () => { filtreLecons = b.dataset.filtre; pageDomaine(idDomaine); });
+  });
 }
 
-function carteLecon(l) {
+function rangLecon(l) {
+  const st = STATUTS[statutLecon(l)];
+  const p = chargerProgress().lecons[l.id];
   const et = etoilesLecon(l.id);
-  const fait = et > 0 ? " fait" : "";
-  const p = chargerProgress();
-  const st = p.lecons[l.id];
-  const mini = st ? `<span class="pts-lecon">${"⭐".repeat(et)}${st.devoir ? " ✍️" : ""}</span>` : "";
-  const num = l.unite ? `Unité ${l.unite} · ` : (l.tag ? l.tag + " · " : "");
+  const num = l.unite ? `Unité ${l.unite}` : (l.tag || "");
+  const sous = [
+    l.texte ? "Texte : « " + esc(l.texte) + " »" : "",
+    p && p.exosReussis ? p.exosReussis + "/" + (l.exercices || []).length + " exercices réussis" : "",
+    st.libelle
+  ].filter(Boolean).join(" · ");
   return `
-    <a class="carte-lecon${fait}" href="#/lecon/${l.id}">
-      ${mini}
-      <span class="num">${esc(num)}${esc(l.texte || "")}</span>
-      <div class="titre">${esc(l.titre)}</div>
+    <a class="carte-lecon" href="#/lecon/${l.id}">
+      <span class="statut ${st.classe}" title="${st.libelle}">${st.icone}</span>
+      <span class="lecon-infos">
+        <span class="lecon-tag">${esc(num)}${l.theme && !l.theme.startsWith("Thème") ? " · " + esc(l.theme) : ""}</span>
+        <div class="lecon-titre" dir="auto">${esc(l.titre)}</div>
+        <div class="lecon-sous">${sous}</div>
+      </span>
+      <span class="lecon-droite">
+        ${et ? `<span class="lecon-etoiles">${"★".repeat(et)}</span>` : ""}
+        <span class="lecon-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+      </span>
     </a>`;
 }
 
 /* ---------- Page : Leçon ---------- */
-let ongletActif = "cours";
 
 function pageLecon(idLecon) {
   const l = INDEX_LECONS[idLecon];
-  if (!l) return pageMatiere("francais");
+  if (!l) return pageAccueil();
   majBoutonRetour(leconsDuDomaine(l.domaine).length ? "#/domaine/" + l.domaine : "#/matiere/francais");
   ongletActif = "cours";
   localStorage.setItem("hidaya_last", idLecon);
@@ -369,28 +659,35 @@ function pageLecon(idLecon) {
 }
 
 function rendreLecon(l) {
+  const pr = profilDe(matiereDuDomaine(l.domaine) || "francais");
+  const rtl = pr.rtl || l.langue === "ar";
   document.title = l.titre + " — Révisions d'Hidaya";
   const st = chargerProgress().lecons[l.id] || { exosFaits: 0, exosReussis: 0, devoir: false };
   const nExos = l.exercices ? l.exercices.length : 0;
+  const aFlash = (l.flash || []).length;
+  const flashStats = aFlash ? statsFlash(l) : null;
+  const dirAttr = rtl ? ' dir="rtl"' : "";
 
   APP.innerHTML = `
-    <header class="lecon-entete">
-      <h1>${l.icone ? l.icone + " " : ""}${esc(l.titre)}</h1>
+    <header class="lecon-entete"${rtl ? ' dir="rtl"' : ""} style="background:linear-gradient(135deg,${pr.couleur},${pr.couleur2})">
+      <div class="lecon-theme">${(pr.icone ? pr.icone + " " : "") + (pr.nomFr || pr.nom)}${l.theme ? " · " + esc(l.theme) : ""}${l.duree ? " · ⏱ " + esc(l.duree) : ""}</div>
+      <h1 dir="auto">${esc(l.titre)}</h1>
       <div class="meta">
-        ${l.texte ? "Texte : « " + esc(l.texte) + " » · " : ""}
-        ${l.theme ? esc(l.theme) + " · " : ""}${l.niveau || "5e / EB7"}${l.duree ? " · ⏱ " + esc(l.duree) : ""}
+        ${l.texte ? "Texte : « " + esc(l.texte) + " » · " : ""}${l.niveau || "5e / EB7 · 1AC"}
+        · <strong style="color:#fff;opacity:.95">${STATUTS[statutLecon(l)].libelle}</strong>
       </div>
     </header>
-    <div class="lecon-objectifs">
-      <strong>🎯 Dans cette leçon, tu vas apprendre à :</strong>
-      <ul>${(l.objectifs || []).map(o => `<li>${esc(o)}</li>`).join("")}</ul>
+    <div class="lecon-objectifs"${rtl ? ' dir="rtl"' : ""}>
+      <strong>🎯 ${rtl ? "أهداف الدرس :" : "Dans cette leçon, tu vas apprendre à :"}</strong>
+      <ul>${(l.objectifs || []).map(o => `<li dir="auto">${esc(o)}</li>`).join("")}</ul>
     </div>
     <nav class="onglets">
-      <button class="onglet ${ongletActif === "cours" ? "actif" : ""}" data-onglet="cours">📘 Le cours</button>
-      <button class="onglet ${ongletActif === "exercices" ? "actif" : ""}" data-onglet="exercices">✍️ Les exercices <span class="mini-score">${st.exosReussis}/${nExos}</span></button>
-      <button class="onglet ${ongletActif === "devoir" ? "actif" : ""}" data-onglet="devoir">📝 Le devoir ${st.devoir ? "✅" : ""}</button>
+      <button class="onglet ${ongletActif === "cours" ? "actif" : ""}" data-onglet="cours">📘 ${rtl ? "الدرس" : "Le cours"}</button>
+      <button class="onglet ${ongletActif === "exercices" ? "actif" : ""}" data-onglet="exercices">✍️ ${rtl ? "التمارين" : "Les exercices"} <span class="mini-score">${st.exosReussis}/${nExos}</span></button>
+      <button class="onglet ${ongletActif === "devoir" ? "actif" : ""}" data-onglet="devoir">📝 ${rtl ? "الفرض" : "Le devoir"} ${st.devoir ? "✅" : ""}</button>
+      ${aFlash ? `<button class="onglet ${ongletActif === "flash" ? "actif" : ""}" data-onglet="flash">🃏 Flashcards <span class="mini-score">${flashStats.su}/${aFlash}</span></button>` : ""}
     </nav>
-    <div id="zone-onglet"></div>
+    <div id="zone-onglet"${rtl ? ' dir="rtl" class="rtl"' : ""}></div>
   `;
   document.querySelectorAll(".onglet").forEach(b => {
     b.addEventListener("click", () => { ongletActif = b.dataset.onglet; rendreLecon(l); });
@@ -398,10 +695,66 @@ function rendreLecon(l) {
   const zone = document.getElementById("zone-onglet");
   if (ongletActif === "cours") rendreCours(zone, l);
   else if (ongletActif === "exercices") rendreExercices(zone, l);
+  else if (ongletActif === "flash") rendreFlash(zone, l);
   else rendreDevoir(zone, l);
   appliquerKaTeX(zone);
   appliquerKaTeX(document.querySelector(".lecon-objectifs"));
 }
+
+/* ---------- Flashcards (mémorisation) ---------- */
+function cleFlash(idLecon) { return "hidaya_flash_" + idLecon; }
+function chargerFlash(idLecon) {
+  try { return JSON.parse(localStorage.getItem(cleFlash(idLecon))) || {}; }
+  catch { return {}; }
+}
+function statsFlash(l) {
+  const etat = chargerFlash(l.id);
+  const su = (l.flash || []).filter(c => etat[c.r]).length;
+  return { su, total: l.flash.length, etat };
+}
+function rendreFlash(zone, l) {
+  const pr = profilDe(matiereDuDomaine(l.domaine) || "francais");
+  const { su, total, etat } = statsFlash(l);
+  zone.innerHTML = `
+    <p class="sous-titre">Retourne chaque carte, mémorise, puis dis si tu savais. ${su}/${total} maîtrisées.</p>
+    <div class="barre-prog" style="margin-bottom:14px"><div class="rempli" style="width:${total ? Math.round(100 * su / total) : 0}%;background:linear-gradient(90deg,${pr.couleur},${pr.couleur2})"></div></div>
+    <div class="flash-grille">
+      ${(l.flash || []).map((c, i) => {
+        const su1 = !!etat[c.r];
+        return `<div class="flash-carte ${su1 ? "su" : ""}" data-flash="${i}">
+          <div class="flash-inner">
+            <button class="flash-face flash-recto" dir="auto">${c.r}<small>${rtl() ? "المس للقلب" : "Clique pour retourner"}</small></button>
+            <div class="flash-face flash-verso" dir="auto">${c.v}
+              <div class="flash-actions">
+                <button class="btn btn-oui btn-petit" data-sav="1">✔ ${rtl() ? "حفظت" : "Je sais"}</button>
+                <button class="btn btn-non btn-petit" data-sav="0">↺ ${rtl() ? "أراجع" : "À revoir"}</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }).join("")}
+    </div>`;
+  zone.querySelectorAll(".flash-carte").forEach(carte => {
+    carte.querySelector(".flash-recto").addEventListener("click", () => carte.classList.add("retournee"));
+    carte.querySelectorAll("[data-sav]").forEach(b => b.addEventListener("click", ev => {
+      ev.stopPropagation();
+      const idx = parseInt(carte.dataset.flash, 10);
+      const etat2 = chargerFlash(l.id);
+      etat2[l.flash[idx].r] = b.dataset.sav === "1";
+      localStorage.setItem(cleFlash(l.id), JSON.stringify(etat2));
+      const st2 = statsFlash(l);
+      if (st2.su === st2.total && !etat2._bonus) {
+        etat2._bonus = 1;
+        localStorage.setItem(cleFlash(l.id), JSON.stringify(etat2));
+        ajouterPoints(15);
+        confettis();
+      }
+      ongletActif = "flash";
+      rendreLecon(l);
+    }));
+  });
+}
+function rtl() { return document.getElementById("zone-onglet")?.getAttribute("dir") === "rtl"; }
 
 /* Rendu des formules mathématiques (KaTeX, si disponible) */
 function appliquerKaTeX(cible) {
@@ -685,7 +1038,6 @@ function rendreDevoir(zone, l) {
 construireIndex();
 window.addEventListener("hashchange", naviguer);
 document.getElementById("annee").textContent = new Date().getFullYear();
-document.getElementById("btn-reglages").addEventListener("click", () => aller("#/reglages"));
-document.getElementById("logo").addEventListener("click", () => aller("#/"));
 naviguer();
 majScore();
+majCompteursSidebar();

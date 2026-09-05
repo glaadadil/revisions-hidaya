@@ -122,13 +122,16 @@ avec les `domaine` correspondants (ajouter le domaine dans `DOMAINES` et `ORDRE_
 
 ## 🗺️ Feuille de route
 
+- [x] **Plateforme complète — 10 matières, 365 leçons, 1 400+ flashcards**
 - [x] Français — 5e/EB7 (20 unités + grammaire + conjugaison + orthographe + évaluations)
 - [x] Mathématiques — 1AC Maroc (21 chapitres, 375 exercices)
-- [ ] Langue arabe — 1AC Maroc *(squelette prêt, base à fournir)*
-- [ ] Éducation islamique — 1AC Maroc *(squelette prêt, base à fournir)*
-- [ ] Anglais — 1AC Maroc *(squelette prêt, base à fournir)*
-- [ ] Sciences (PC + SVT) — 1AC Maroc *(squelette prêt, base à fournir)*
-- [ ] Français 1AC Maroc *(squelette prêt, base à fournir)*
+- [x] Langue arabe — 1AC Maroc (53 leçons, interface RTL, police Amiri)
+- [x] Éducation islamique — 1AC Maroc (26 leçons, RTL)
+- [x] Anglais — 1AC Maroc (50 unités, flashcards de vocabulaire EN/AR/FR)
+- [x] Français 1AC Maroc (44 leçons)
+- [x] SVT (30 leçons) · Physique-Chimie (23) · Sciences sociales (39, RTL) · Informatique (29)
+- [x] 🗓️ Assistant de planning hebdomadaire (Hidaya organise sa semaine elle-même)
+- [x] 🃏 Moteur de mémorisation par flashcards avec suivi de maîtrise
 - [ ] Mode « dictée lue par l'ordinateur » (synthèse vocale)
 
 ## 📄 Notes
