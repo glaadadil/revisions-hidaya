@@ -788,9 +788,44 @@ function pageReglages() {
   });
 }
 
-/* ---------- Carte mentale d'une matière ----------
-   Racine = la matière · branches = les unités · feuilles = les leçons,
-   colorées selon leur statut (grise : à faire · orange : en cours · verte : terminée). */
+/* ---------- Carte mentale dépliable (façon NotebookLM) ----------
+   La carte démarre sur sa racine ; chaque clic déplie un niveau :
+   racine → branches → feuilles. Re-clic pour replier. */
+function cmxNoeud(node) {
+  const { t, chemin, html, couleur, enfants, lien, statut } = node;
+  const aEnfants = enfants && enfants.length > 0;
+  const chev = aEnfants ? `<span class="cmx-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>` : `<span class="cmx-puce"></span>`;
+  const contenu = lien
+    ? `<a class="cmx-titre" href="${lien}" dir="auto">${html}</a>`
+    : `<span class="cmx-titre" dir="auto">${html}</span>`;
+  return `
+    <div class="cmx-noeud ${aEnfants ? "a-enfants" : "feuille"} ${statut ? "st-" + statut : ""}" style="${couleur ? `--nbc:${couleur}` : ""}">
+      ${aEnfants
+        ? `<button class="cmx-bouton" data-cmx="${chemin}">${chev}<span class="cmx-carte">${contenu}</span></button>`
+        : `<span class="cmx-carte">${chev}${contenu}</span>`}
+      ${aEnfants ? `<div class="cmx-enfants" data-cmx-enfants="${chemin}" hidden>
+        ${enfants.map(c => cmxNoeud(c)).join("")}
+      </div>` : ""}
+    </div>`;
+}
+
+function cmxBrancher(conteneur) {
+  conteneur.querySelectorAll(".cmx-bouton").forEach(b => {
+    b.addEventListener("click", e => {
+      e.preventDefault(); e.stopPropagation();
+      const cle = b.dataset.cmx;
+      const enfants = conteneur.querySelector(`[data-cmx-enfants="${cle}"]`);
+      if (!enfants) return;
+      const ouvert = !enfants.hidden;
+      enfants.hidden = ouvert;
+      b.classList.toggle("ouvert", !ouvert);
+      const carte = b.querySelector(".cmx-carte");
+      if (carte) carte.classList.toggle("ouvert", !ouvert);
+    });
+  });
+}
+
+/* Carte mentale d'une matière : racine → unités → leçons (liens cliquables). */
 function carteMentaleMatiere(mid) {
   const pr = profilDe(mid);
   const lecons = domainesDe(mid).flatMap(d => leconsDuDomaine(d));
@@ -801,24 +836,55 @@ function carteMentaleMatiere(mid) {
     t.lecons.push(l);
   });
   return `
-    <div class="cm">
-      <div class="cm-racine" style="background:linear-gradient(135deg,${pr.couleur},${pr.couleur2})">${pr.icone} <span dir="auto">${pr.nomFr || pr.nom}</span></div>
-      <div class="cm-tronc"></div>
-      <div class="cm-branches">
-        ${themes.map(t => `
-          <div class="cm-branche" style="--bc:${pr.couleur};--bt:${pr.tint}">
-            <div class="cm-branche-titre" dir="auto" title="${esc(t.nom)}">${esc(t.nom)}</div>
-            <div class="cm-feuilles">
-              ${t.lecons.map(l => {
-                const st = statutLecon(l);
-                return `<a class="cm-feuille st-${st}" dir="auto" href="#/lecon/${l.id}" title="${esc(l.titre)} — ${STATUTS[st].libelle}">
-                  ${l.tag ? `<b>${l.tag}</b>` : ""} ${esc(l.titre)}
-                </a>`;
-              }).join("")}
-            </div>
-          </div>`).join("")}
-      </div>
-    </div>`;
+    <div class="cmx">
+      ${cmxNoeud({
+        t: pr.nomFr || pr.nom,
+        chemin: "r",
+        html: `${pr.icone} ${pr.nomFr || pr.nom}`,
+        couleur: pr.couleur,
+        enfants: themes.map((t, i) => ({
+          t: t.nom,
+          chemin: "r-b" + i,
+          html: esc(t.nom),
+          couleur: pr.couleur,
+          enfants: t.lecons.map(l => ({
+            t: l.titre,
+            chemin: "r-b" + i + "-f" + l.id,
+            html: (l.tag ? `<b>${l.tag}</b> ` : "") + esc(l.titre),
+            lien: "#/lecon/" + l.id,
+            statut: statutLecon(l)
+          }))
+        }))
+      })}
+    </div>
+    <p class="cmx-aide">👆 Déplie la carte : la matière → les unités → les leçons. Clique une leçon pour l'ouvrir.</p>`;
+}
+
+/* Carte mentale d'une leçon : racine → notions → détails. */
+function carteMentaleLecon(l) {
+  const pr = profilDe(matiereDuDomaine(l.domaine) || "francais");
+  return `
+    <div class="cmx">
+      ${cmxNoeud({
+        t: l.titre,
+        chemin: "r",
+        html: esc(l.titre),
+        couleur: pr.couleur,
+        enfants: l.carte.b.map((b, i) => ({
+          t: b.t,
+          chemin: "r-b" + i,
+          html: esc(b.t),
+          couleur: pr.couleur,
+          enfants: b.f.map((f, j) => ({
+            t: f,
+            chemin: `r-b${i}-f${j}`,
+            html: esc(f),
+            couleur: pr.couleur
+          }))
+        }))
+      })}
+    </div>
+    <p class="cmx-aide">👆 Déplie chaque notion, puis redessine la carte de mémoire : la meilleure des révisions !</p>`;
 }
 
 /* ---------- Page : Matière ---------- */
@@ -844,7 +910,7 @@ function pageMatiere(idMatiere) {
     <div class="liste-domaines" style="--acc:${pr.couleur};--acc2:${pr.couleur2};--tint:${pr.tint}">
     <h2 class="titre-section">🗺️ La carte mentale de la matière</h2>
     <p class="sous-titre" style="margin-top:-8px">Tout le programme d'un coup d'œil : <span class="cm-legende st-terminee">✓ terminée</span> <span class="cm-legende st-encours">◐ en cours</span> <span class="cm-legende st-aucune">à faire</span></p>
-    ${carteMentaleMatiere(idMatiere)}
+    <div id="cm-matiere">${carteMentaleMatiere(idMatiere)}</div>
     <h2 class="titre-section" style="margin-top:26px">📚 Les domaines de révision</h2>
     ${domainesDe(idMatiere).map(did => {
       const d = DOMAINES[did];
@@ -867,6 +933,7 @@ function pageMatiere(idMatiere) {
     }).join("")}
     </div>
   `;
+  cmxBrancher(document.getElementById("cm-matiere"));
 }
 
 /* ---------- Page : Domaine (liste des leçons) ---------- */
@@ -1069,27 +1136,15 @@ function appliquerKaTeX(cible) {
   });
 }
 
-/* ---------- Carte mentale d'une leçon ---------- */
+/* ---------- Carte mentale d'une leçon (dépliable) ---------- */
 function rendreCarteMentaleLecon(zone, l) {
-  const pr = profilDe(matiereDuDomaine(l.domaine) || "francais");
-  const rtl = pr.rtl || l.langue === "ar";
+  const rtl = profilDe(matiereDuDomaine(l.domaine) || "francais").rtl || l.langue === "ar";
   zone.innerHTML = `
-    <p class="sous-titre">${rtl ? "تصوّر الدرس كله في نظرة واحدة 🧠" : "Visualise toute la leçon d'un seul coup d'œil 🧠 — branche par branche."}</p>
-    <div class="cm">
-      <div class="cm-racine" style="background:linear-gradient(135deg,${pr.couleur},${pr.couleur2})" dir="auto">${esc(l.titre)}</div>
-      <div class="cm-tronc"></div>
-      <div class="cm-branches">
-        ${l.carte.b.map(b => `
-          <div class="cm-branche" style="--bc:${pr.couleur};--bt:${pr.tint}">
-            <div class="cm-branche-titre" dir="auto">${esc(b.t)}</div>
-            <div class="cm-feuilles">
-              ${b.f.map(f => `<div class="cm-feuille cm-feuille-txt" dir="auto">${esc(f)}</div>`).join("")}
-            </div>
-          </div>`).join("")}
-      </div>
-    </div>
-    <div class="encouragement">🧠 ${rtl ? "أعد رسم الخريطة من الذاكرة — أفضل طريقة للمراجعة !" : "Redessine cette carte de mémoire : c'est la meilleure des révisions !"}</div>`;
+    <p class="sous-titre">${rtl ? "تصوّر الدرس كله في نظرة واحدة 🧠" : "Visualise toute la leçon 🧠 — déplie les notions une par une."}</p>
+    ${carteMentaleLecon(l)}`;
+  cmxBrancher(zone.querySelector(".cmx"));
 }
+
 
 /* ---------- Onglet Cours ---------- */
 function rendreCours(zone, l) {
