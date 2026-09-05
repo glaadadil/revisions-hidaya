@@ -232,23 +232,30 @@ function majBoutonRetour(cible) {
    un compagnon quotidien : Hier (ancrer) · Aujourd'hui (réviser) ·
    Demain (anticiper). */
 const JOUR_PAR_INDEX = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
-const JOURS_EDT = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+const JOURS_EDT = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"]; // cours du lundi au vendredi
+const HORAIRE_EDT = "08:30 → 15:00";
 const CLE_EDT = "hidaya_edt_v1";
 const CLE_EDT_SUIVI = "hidaya_edt_suivi_v1";
 let ongletJourEdt = 1; // 0 = hier · 1 = aujourd'hui · 2 = demain
 
 const SEMAINE_TYPE = {
-  Lundi: ["maths", "arabe", "svt"],
-  Mardi: ["francais", "anglais", "pc"],
-  Mercredi: ["maths", "ss", "info"],
-  Jeudi: ["arabe", "anglais", "svt"],
-  Vendredi: ["francais", "maths", "pc"],
-  Samedi: ["arabe", "info", "ss"],
-  Dimanche: []
+  Lundi: ["maths", "arabe", "svt", "anglais"],
+  Mardi: ["francais", "pc", "ss", "info"],
+  Mercredi: ["maths", "arabe", "anglais", "svt"],
+  Jeudi: ["francais", "pc", "ss", "info"],
+  Vendredi: ["arabe", "maths", "francais1ac", "anglais"]
 };
 
 function chargerEdt() {
-  try { return JSON.parse(localStorage.getItem(CLE_EDT)) || {}; } catch { return {}; }
+  let edt = {};
+  try { edt = JSON.parse(localStorage.getItem(CLE_EDT)) || {}; } catch { edt = {}; }
+  // ne garder que les jours d'école (lundi → vendredi)
+  let change = false;
+  Object.keys(edt).forEach(j => {
+    if (!JOURS_EDT.includes(j)) { delete edt[j]; change = true; }
+  });
+  if (change) sauverEdt(edt);
+  return edt;
 }
 function sauverEdt(edt) { localStorage.setItem(CLE_EDT, JSON.stringify(edt)); }
 function chargerSuiviEdt() {
@@ -325,6 +332,32 @@ function rendreOngletJour(n) {
     </div>`;
 }
 
+/* La grille hebdomadaire de l'emploi du temps, en couleurs de matières. */
+function rendreGrilleEdt(edt) {
+  const jours = JOURS_EDT.filter(j => (edt[j] || []).length > 0);
+  if (jours.length === 0) return "";
+  return `
+    <div class="edt-grille-wrap">
+      <div class="edt-grille-tete">
+        <span class="edt-horaire">🕗 ${HORAIRE_EDT}</span>
+        <span class="edt-legende">Les couleurs = les matières</span>
+      </div>
+      <div class="edt-grille" style="--n:${jours.length}">
+        ${jours.map(jour => `
+          <div class="edt-colonne ${jour === JOUR_PAR_INDEX[new Date().getDay()] ? "aujourdhui" : ""}">
+            <div class="edt-jour-nom">${jour}</div>
+            ${(edt[jour] || []).map((mid, i) => {
+              const pr = profilDe(mid);
+              return `<div class="edt-bloc" style="background:${pr.tint};border-color:${pr.couleur};color:${pr.couleur}" title="${pr.nomFr || pr.nom} · créneau ${i + 1} — ${HORAIRE_EDT}">
+                <span class="edt-bloc-num">${i + 1}</span>
+                <span class="edt-bloc-nom" dir="auto">${pr.icone} ${pr.nomFr || pr.nom}</span>
+              </div>`;
+            }).join("")}
+          </div>`).join("")}
+      </div>
+    </div>`;
+}
+
 function brancherEdtAccueil() {
   document.querySelectorAll(".edt-onglet").forEach(b => {
     b.addEventListener("click", () => { ongletJourEdt = +b.dataset.j; pageAccueil(); });
@@ -385,8 +418,8 @@ function pageAccueil() {
 
     <section class="edt-section">
       <div class="edt-tete">
-        <h2>🏫 Ma journée scolaire</h2>
-        <a class="btn btn-secondaire btn-petit" href="#/edt">✏️ Mon emploi du temps</a>
+        <h2>🏫 Ma semaine scolaire</h2>
+        <a class="btn btn-secondaire btn-petit" href="#/edt">✏️ Modifier mon emploi du temps</a>
       </div>
       ${(() => {
         const edt = chargerEdt();
@@ -424,7 +457,8 @@ function pageAccueil() {
               <b>${l.t}</b><small>${nomDateCourt(l.d)}</small>
             </button>`).join("")}
         </div>
-        <div class="edt-contenu">${rendreOngletJour(ongletJourEdt)}</div>`;
+        <div class="edt-contenu">${rendreOngletJour(ongletJourEdt)}</div>
+        ${rendreGrilleEdt(edt)}`;
       })()}
     </section>
 
@@ -662,8 +696,7 @@ function pageEdt() {
     <p class="sous-titre">Pour chaque jour, ajoute les matières que tu as en classe.
        L'accueil t'affichera ensuite quoi réviser <strong>hier · aujourd'hui · demain</strong>.</p>
     <div class="edt-editor">
-      ${JOURS_EDT.map(jour => {
-        const mats = edt[jour] || [];
+      ${JOURS_EDT.map(jour => {        const mats = edt[jour] || [];
         return `
         <div class="jour-carte edt-jour" data-jour-edt="${jour}">
           <div class="jour-tete"><b>${jour}</b>
@@ -687,6 +720,8 @@ function pageEdt() {
         </div>`;
       }).join("")}
     </div>
+    <h2 class="titre-section" style="margin-top:20px">👀 Ton emploi du temps en couleurs</h2>
+    ${rendreGrilleEdt(chargerEdt()) || '<p class="vide-info">Ajoute des matières pour voir ton emploi du temps.</p>'}
     <div class="edt-actions-bas">
       <button class="btn btn-secondaire btn-petit" id="edt-type2">⚡ Utiliser une semaine type</button>
       <button class="btn btn-danger btn-petit" id="edt-vider">🗑 Tout effacer</button>

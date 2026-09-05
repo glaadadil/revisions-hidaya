@@ -757,3 +757,50 @@ textarea.reponse-libre:focus { outline: none; border-color: var(--accent); }
 /* Planifier = bonheur : légère touche ludique sur les cartes du jour */
 .edt-carte { transition: transform .15s, box-shadow .15s; }
 .edt-carte:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(15,23,42,.10); }
+
+/* ---------- Grille hebdomadaire de l'emploi du temps ---------- */
+.edt-grille-wrap { margin-top: 20px; padding-top: 16px; border-top: 2px dashed #e8eaf3; }
+.edt-grille-tete {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
+}
+.edt-horaire {
+  font-weight: 800; font-size: .9rem; color: var(--encre);
+  background: var(--gris-clair); border-radius: 999px; padding: 6px 16px;
+}
+.edt-legende { color: var(--gris); font-size: .82rem; font-weight: 600; }
+
+.edt-grille {
+  display: grid; grid-template-columns: repeat(var(--n, 5), 1fr); gap: 10px;
+}
+.edt-colonne {
+  background: #fbfbfe; border: 1px solid #eef0f7; border-radius: 16px;
+  padding: 10px; display: flex; flex-direction: column; gap: 8px;
+}
+.edt-colonne.aujourdhui {
+  background: #f4f1ff; border-color: #c4b5fd;
+  box-shadow: 0 0 0 2px #c4b5fd;
+}
+.edt-jour-nom {
+  font-weight: 800; font-size: .85rem; color: var(--encre);
+  text-align: center; padding-bottom: 6px; border-bottom: 2px solid #eef0f7;
+}
+.edt-colonne.aujourdhui .edt-jour-nom { color: var(--primaire); }
+.edt-bloc {
+  display: flex; align-items: center; gap: 8px;
+  border: 2px solid; border-radius: 12px; padding: 8px 10px;
+  font-weight: 800; font-size: .8rem; line-height: 1.3;
+  transition: transform .12s, box-shadow .12s;
+}
+.edt-bloc:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(15,23,42,.12); }
+.edt-bloc-num {
+  flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
+  background: rgba(255,255,255,.75); border: 1.5px solid currentColor;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .68rem; font-weight: 900;
+}
+.edt-bloc-nom { flex: 1; min-width: 0; }
+
+@media (max-width: 640px) {
+  .edt-grille { overflow-x: auto; grid-auto-flow: column; grid-auto-columns: 150px; grid-template-columns: none; padding-bottom: 6px; }
+}
