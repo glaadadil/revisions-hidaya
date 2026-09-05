@@ -804,3 +804,44 @@ textarea.reponse-libre:focus { outline: none; border-color: var(--accent); }
 @media (max-width: 640px) {
   .edt-grille { overflow-x: auto; grid-auto-flow: column; grid-auto-columns: 150px; grid-template-columns: none; padding-bottom: 6px; }
 }
+
+/* ---------- Cartes mentales (matière et leçon) ---------- */
+.cm { text-align: center; }
+.cm-racine {
+  display: inline-block; color: #fff; font-weight: 800;
+  border-radius: 16px; padding: 12px 26px; font-size: 1.05rem;
+  box-shadow: 0 4px 14px rgba(30,41,59,.18);
+  max-width: 90%;
+}
+.cm-tronc { width: 3px; height: 26px; background: #cbd5e1; margin: 0 auto; border-radius: 3px; }
+.cm-branches { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; align-items: flex-start; }
+.cm-branche {
+  background: var(--blanc); border: 1px solid #eef0f7; border-top: 4px solid var(--bc, var(--primaire));
+  border-radius: 14px; padding: 12px 13px; width: 250px; max-width: 100%;
+  text-align: center; box-shadow: var(--ombre);
+  display: flex; flex-direction: column; gap: 9px; align-items: stretch;
+}
+.cm-branche-titre {
+  font-weight: 800; font-size: .9rem; color: var(--encre);
+  background: var(--bt, var(--violet-clair)); border-radius: 10px; padding: 7px 10px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cm-feuilles { display: flex; flex-direction: column; gap: 6px; }
+.cm-feuille {
+  display: block; text-align: left; text-decoration: none; color: var(--encre-doux);
+  background: #f8f9fe; border: 1px solid #e8eaf3; border-radius: 10px;
+  padding: 7px 10px; font-size: .8rem; font-weight: 600; line-height: 1.4;
+  transition: all .13s;
+}
+.cm-feuille b { color: var(--bc, var(--primaire)); margin-right: 4px; }
+a.cm-feuille:hover { border-color: var(--bc, var(--primaire)); transform: translateX(3px); }
+.cm-feuille-txt { cursor: default; }
+.cm-legende { display: inline-block; border-radius: 999px; padding: 3px 12px; font-size: .75rem; font-weight: 800; margin: 0 3px; }
+.cm-feuille.st-aucune { background: #f8f9fe; }
+.cm-feuille.st-encours { background: var(--jaune-clair); border-color: var(--jaune); }
+.cm-feuille.st-encours::before { content: "◐ "; color: #b45309; }
+.cm-feuille.st-terminee { background: var(--vert-clair); border-color: var(--vert); }
+.cm-feuille.st-terminee::before { content: "✓ "; color: var(--vert-fonce); font-weight: 900; }
+.cm-legende.st-terminee { background: var(--vert-clair); color: var(--vert-fonce); }
+.cm-legende.st-encours { background: var(--jaune-clair); color: #b45309; }
+.cm-legende.st-aucune { background: var(--gris-clair); color: var(--gris); }

@@ -183,6 +183,40 @@ def parser_corriges(md):
 
 NIVEAUX = [('1', 'facile'), ('3', 'difficile')]
 
+
+def strip_tags(s):
+    return re.sub(r'<[^>]+>', '', s).strip()
+
+def extraire_carte(secs):
+    """Construit la carte mentale de la leçon depuis Points clés (table) et Résumé (sections)."""
+    branches = []
+    for cle, corps in secs.items():
+        if cle.startswith('points cl'):
+            rows = lignes_tableau([l for l in corps.split('\n') if l.strip().startswith('|')])
+            if rows and len(rows) > 1 and all(len(r) == 2 for r in rows):
+                for r in rows[1:]:
+                    a = strip_tags(inline(r[0])); b = strip_tags(inline(r[1]))
+                    if a and b:
+                        branches.append({'t': a[:60], 'f': [b[:170]]})
+    for cle, corps in secs.items():
+        if cle.startswith(('résume', 'resume')):
+            cur = None
+            for line in corps.split('\n'):
+                ls = line.strip()
+                m = re.match(r'^#{4,6}\s+(.*)$', ls)
+                if m:
+                    cur = {'t': strip_tags(inline(m.group(1)))[:60], 'f': []}
+                    branches.append(cur)
+                    continue
+                if cur is not None:
+                    mli = re.match(r'^[-*•]\s+(.*)$', ls) or re.match(r'^\d+[.)]\s+(.*)$', ls)
+                    if mli and len(cur['f']) < 5:
+                        txt = strip_tags(inline(mli.group(1)))
+                        if txt and len(txt) > 3:
+                            cur['f'].append(txt[:170])
+    branches = [b for b in branches if b['t'] and b['f']]
+    return {'b': branches[:8]} if branches else None
+
 def convertir_doc(path, matiere_id, langue):
     s = io.open(path, encoding='utf-8').read()
     matches = list(RE_LECON.finditer(s))
@@ -306,6 +340,9 @@ def convertir_doc(path, matiere_id, langue):
             'cours': cartes,
             'exercices': exercices
         }
+        carte = extraire_carte(secs)
+        if carte:
+            lecon['carte'] = carte
         if flash:
             lecon['flash'] = flash
         if devoir:

@@ -8,31 +8,31 @@
    Chaque matière est une branche avec sa propre identité :
    ses couleurs, son slogan, sa langue et SA méthode de révision. */
 const PROFILS = {
-  francais:    { nom: "Français", icone: "📖", couleur: "#7c3aed", couleur2: "#ec4899", tint: "#ede9fe",
+  francais:    { nom: "Français", icone: "📖", couleur: "#7c3aed", couleur2: "#a78bfa", tint: "#ede9fe",
                  etiquette: "Lecture & expression", rtl: false,
                  methode: "① Lis le cours en surlignant les règles. ② Fais les exercices <strong>par écrit</strong>, sans regarder la correction. ③ Compare, puis note tes erreurs pour ne plus les refaire." },
   maths:       { nom: "Mathématiques", icone: "🔢", couleur: "#2563eb", couleur2: "#0ea5e9", tint: "#dbeafe",
                  etiquette: "Calcul & logique", rtl: false,
                  methode: "① Refais l'exemple du cours sur papier sans le regarder. ② Traite les exercices <strong>en détaillant chaque étape</strong>. ③ Vérifie ligne par ligne avec le corrigé." },
-  arabe:       { nom: "اللغة العربية", nomFr: "Langue arabe", icone: "🕌", couleur: "#0f766e", couleur2: "#14b8a6", tint: "#ccfbf1",
+  arabe:       { nom: "اللغة العربية", nomFr: "Langue arabe", icone: "🕌", couleur: "#0d9488", couleur2: "#2dd4bf", tint: "#ccfbf1",
                  etiquette: "قراءة · قواعد · تعبير", rtl: true,
                  methode: "① اقرأ الدرس بصوت عالٍ مرتين. ② احفظ المفردات بالبطاقات 🃏 كل يوم خمس دقائق. ③ أجب عن التمارين كتابةً ثم قارن بالتصحيح." },
-  islamique:   { nom: "التربية الإسلامية", nomFr: "Éducation islamique", icone: "🕋", couleur: "#047857", couleur2: "#34d399", tint: "#d1fae5",
+  islamique:   { nom: "التربية الإسلامية", nomFr: "Éducation islamique", icone: "🕋", couleur: "#059669", couleur2: "#34d399", tint: "#d1fae5",
                  etiquette: "التزكية · الاقتداء · الاستجابة · الحكمة", rtl: true,
                  methode: "① احفظ الآيات والأحاديث بالتكرار اليومي القصير. ② استعمل البطاقات 🃏 لتثبيت المصطلحات والمفاهيم. ③ أجب عن أسئلة الفهم كتابةً، ثم صحّح." },
-  anglais:     { nom: "English", nomFr: "Anglais", icone: "🇬🇧", couleur: "#d97706", couleur2: "#fbbf24", tint: "#fef3c7",
+  anglais:     { nom: "English", nomFr: "Anglais", icone: "🇬🇧", couleur: "#ea580c", couleur2: "#fb923c", tint: "#ffedd5",
                  etiquette: "Words · Grammar · Say it aloud!", rtl: false,
                  methode: "① Learn the new words with the flashcards 🃏 — say each word <strong>aloud</strong>. ② Read the grammar box twice. ③ Do the exercises, then check yourself." },
-  francais1ac: { nom: "Français 1AC", icone: "🇫🇷", couleur: "#be185d", couleur2: "#f472b6", tint: "#fce7f3",
+  francais1ac: { nom: "Français 1AC", icone: "🇫🇷", couleur: "#db2777", couleur2: "#f472b6", tint: "#fce7f3",
                  etiquette: "Langue, textes & expression (Maroc)", rtl: false,
                  methode: "① Lis le texte et le cours en repérant les notions clés. ② Mémorise les définitions avec les flashcards 🃏. ③ Rédige les exercices puis compare avec le corrigé." },
-  svt:         { nom: "SVT", nomFr: "Sciences de la vie et de la Terre", icone: "🌱", couleur: "#16a34a", couleur2: "#4ade80", tint: "#dcfce7",
+  svt:         { nom: "SVT", nomFr: "Sciences de la vie et de la Terre", icone: "🌱", couleur: "#65a30d", couleur2: "#a3e635", tint: "#ecfccb",
                  etiquette: "Comprendre le vivant et la Terre", rtl: false,
                  methode: "① Explique le phénomène <strong>avec tes propres mots</strong> avant tout. ② Retiens les définitions avec les flashcards 🃏. ③ Refais les schémas et les classements de mémoire." },
-  pc:          { nom: "Physique-Chimie", icone: "⚗️", couleur: "#0891b2", couleur2: "#22d3ee", tint: "#cffafe",
+  pc:          { nom: "Physique-Chimie", icone: "⚗️", couleur: "#dc2626", couleur2: "#f87171", tint: "#fee2e2",
                  etiquette: "Matière, énergie & univers", rtl: false,
                  methode: "① Comprends la loi ou l'expérience avant de calculer. ② Rédige les exercices <strong>avec unités et étapes</strong>. ③ Compare au corrigé et refais ceux qui ont échoué le lendemain." },
-  ss:          { nom: "الاجتماعيات", nomFr: "Sciences sociales", icone: "🌍", couleur: "#9333ea", couleur2: "#c084fc", tint: "#f3e8ff",
+  ss:          { nom: "الاجتماعيات", nomFr: "Sciences sociales", icone: "🌍", couleur: "#ca8a04", couleur2: "#facc15", tint: "#fef9c3",
                  etiquette: "التاريخ · الجغرافيا · التربية المدنية", rtl: true,
                  methode: "① اقرأ الدرس وحدّد التواريخ والمصطلحات والأسماء. ② احفظها بالبطاقات 🃏. ③ أعد شرح الدرس بأسلوبك ثم قارن بالنص." },
   info:        { nom: "Informatique", icone: "💻", couleur: "#475569", couleur2: "#94a3b8", tint: "#e2e8f0",
@@ -440,16 +440,9 @@ function pageAccueil() {
           { j: 1, t: "Aujourd'hui", d: dateDecalage(0) },
           { j: 2, t: "Demain", d: dateDecalage(1) }
         ];
-        // petit bonheur : compter les révisions du jour
-        const matsAuj = edt[JOUR_PAR_INDEX[new Date().getDay()]] || [];
-        const suivi = chargerSuiviEdt();
-        const revAuj = matsAuj.filter(mid => suivi[cleDate(new Date()) + "|" + mid]).length;
-        const badgeJour = matsAuj.length
-          ? `<span class="edt-compteur-jour">${revAuj}/${matsAuj.length} révisée${matsAuj.length > 1 ? "s" : ""} aujourd'hui</span>` : "";
         return `
         <div class="edt-tete-sous">
           <span class="edt-intro">Ce que ta semaine te demande, en douceur :</span>
-          ${badgeJour}
         </div>
         <div class="edt-onglets">
           ${labels.map(l => `
@@ -482,12 +475,9 @@ function pageAccueil() {
         const doms = domainesDe(mid);
         const total = doms.reduce((n, d) => n + leconsDuDomaine(d).length, 0);
         const faites = doms.reduce((n, d) => n + leconsTerminees(d), 0);
-        const pct = total ? Math.round(100 * faites / total) : 0;
         return `<a class="carte-matiere" href="#/matiere/${mid}" style="--acc:${pr.couleur};--acc2:${pr.couleur2};--tint:${pr.tint}">
           <div class="mat-tete"><span class="mat-icone" style="background:${pr.tint}">${pr.icone}</span>
             <span><span class="mat-nom">${pr.nom}${pr.nomFr ? `<br><span class="mat-nomfr">${pr.nomFr}</span>` : ""}</span><br><span class="mat-desc">${total} leçon${total > 1 ? "s" : ""} · ${pr.etiquette}</span></span></div>
-          <div class="prog-ligne"><span>Progression</span><span class="pourcent">${pct}%</span></div>
-          <div class="barre-prog"><div class="rempli" style="width:${pct}%;background:linear-gradient(90deg,${pr.couleur},${pr.couleur2})"></div></div>
         </a>`;
       }).join("")}
     </section>
@@ -667,24 +657,8 @@ function pagePlanning() {
   }));
 }
 
-/* Compteurs de la barre latérale (leçons terminées / total) */
-function majCompteursSidebar() {
-  ORDRE_MATIERES.forEach(mid => {
-    const el = document.getElementById("cpt-" + mid);
-    if (!el) return;
-    const doms = domainesDe(mid);
-    const total = doms.reduce((n, d) => n + leconsDuDomaine(d).length, 0);
-    const faites = doms.reduce((n, d) => n + leconsTerminees(d), 0);
-    el.textContent = total ? faites + "/" + total : "";
-  });
-  const pl = document.getElementById("cpt-planning");
-  if (pl) {
-    const n = nbTachesPlanning();
-    const p = chargerPlanning();
-    const faites = Object.values(p.taches || {}).reduce((n2, l) => n2 + l.filter(t => t.fait).length, 0);
-    pl.textContent = n ? faites + "/" + n : "";
-  }
-}
+/* Compteurs de la barre latérale : supprimés (pas de statistiques sur l'accueil). */
+function majCompteursSidebar() {}
 
 /* ---------- Page : Éditeur d'emploi du temps ---------- */
 function pageEdt() {
@@ -814,6 +788,39 @@ function pageReglages() {
   });
 }
 
+/* ---------- Carte mentale d'une matière ----------
+   Racine = la matière · branches = les unités · feuilles = les leçons,
+   colorées selon leur statut (grise : à faire · orange : en cours · verte : terminée). */
+function carteMentaleMatiere(mid) {
+  const pr = profilDe(mid);
+  const lecons = domainesDe(mid).flatMap(d => leconsDuDomaine(d));
+  const themes = [];
+  lecons.forEach(l => {
+    let t = themes.find(x => x.nom === (l.theme || "Leçons"));
+    if (!t) { t = { nom: l.theme || "Leçons", lecons: [] }; themes.push(t); }
+    t.lecons.push(l);
+  });
+  return `
+    <div class="cm">
+      <div class="cm-racine" style="background:linear-gradient(135deg,${pr.couleur},${pr.couleur2})">${pr.icone} <span dir="auto">${pr.nomFr || pr.nom}</span></div>
+      <div class="cm-tronc"></div>
+      <div class="cm-branches">
+        ${themes.map(t => `
+          <div class="cm-branche" style="--bc:${pr.couleur};--bt:${pr.tint}">
+            <div class="cm-branche-titre" dir="auto" title="${esc(t.nom)}">${esc(t.nom)}</div>
+            <div class="cm-feuilles">
+              ${t.lecons.map(l => {
+                const st = statutLecon(l);
+                return `<a class="cm-feuille st-${st}" dir="auto" href="#/lecon/${l.id}" title="${esc(l.titre)} — ${STATUTS[st].libelle}">
+                  ${l.tag ? `<b>${l.tag}</b>` : ""} ${esc(l.titre)}
+                </a>`;
+              }).join("")}
+            </div>
+          </div>`).join("")}
+      </div>
+    </div>`;
+}
+
 /* ---------- Page : Matière ---------- */
 function pageMatiere(idMatiere) {
   const pr = profilDe(idMatiere);
@@ -835,6 +842,10 @@ function pageMatiere(idMatiere) {
     </div>
     <h2 class="titre-section"${dirAttr}>Choisis ton domaine de révision</h2>
     <div class="liste-domaines" style="--acc:${pr.couleur};--acc2:${pr.couleur2};--tint:${pr.tint}">
+    <h2 class="titre-section">🗺️ La carte mentale de la matière</h2>
+    <p class="sous-titre" style="margin-top:-8px">Tout le programme d'un coup d'œil : <span class="cm-legende st-terminee">✓ terminée</span> <span class="cm-legende st-encours">◐ en cours</span> <span class="cm-legende st-aucune">à faire</span></p>
+    ${carteMentaleMatiere(idMatiere)}
+    <h2 class="titre-section" style="margin-top:26px">📚 Les domaines de révision</h2>
     ${domainesDe(idMatiere).map(did => {
       const d = DOMAINES[did];
       const lecons = leconsDuDomaine(did);
@@ -974,6 +985,7 @@ function rendreLecon(l) {
       <button class="onglet ${ongletActif === "exercices" ? "actif" : ""}" data-onglet="exercices">✍️ ${rtl ? "التمارين" : "Les exercices"} <span class="mini-score">${st.exosReussis}/${nExos}</span></button>
       <button class="onglet ${ongletActif === "devoir" ? "actif" : ""}" data-onglet="devoir">📝 ${rtl ? "الفرض" : "Le devoir"} ${st.devoir ? "✅" : ""}</button>
       ${aFlash ? `<button class="onglet ${ongletActif === "flash" ? "actif" : ""}" data-onglet="flash">🃏 Flashcards <span class="mini-score">${flashStats.su}/${aFlash}</span></button>` : ""}
+      ${(l.carte && l.carte.b && l.carte.b.length) ? `<button class="onglet ${ongletActif === "cm" ? "actif" : ""}" data-onglet="cm">🗺️ ${rtl ? "الخريطة الذهنية" : "Carte mentale"}</button>` : ""}
     </nav>
     <div id="zone-onglet"${rtl ? ' dir="rtl" class="rtl"' : ""}></div>
   `;
@@ -984,6 +996,7 @@ function rendreLecon(l) {
   if (ongletActif === "cours") rendreCours(zone, l);
   else if (ongletActif === "exercices") rendreExercices(zone, l);
   else if (ongletActif === "flash") rendreFlash(zone, l);
+  else if (ongletActif === "cm") rendreCarteMentaleLecon(zone, l);
   else rendreDevoir(zone, l);
   appliquerKaTeX(zone);
   appliquerKaTeX(document.querySelector(".lecon-objectifs"));
@@ -1054,6 +1067,28 @@ function appliquerKaTeX(cible) {
     ],
     throwOnError: false
   });
+}
+
+/* ---------- Carte mentale d'une leçon ---------- */
+function rendreCarteMentaleLecon(zone, l) {
+  const pr = profilDe(matiereDuDomaine(l.domaine) || "francais");
+  const rtl = pr.rtl || l.langue === "ar";
+  zone.innerHTML = `
+    <p class="sous-titre">${rtl ? "تصوّر الدرس كله في نظرة واحدة 🧠" : "Visualise toute la leçon d'un seul coup d'œil 🧠 — branche par branche."}</p>
+    <div class="cm">
+      <div class="cm-racine" style="background:linear-gradient(135deg,${pr.couleur},${pr.couleur2})" dir="auto">${esc(l.titre)}</div>
+      <div class="cm-tronc"></div>
+      <div class="cm-branches">
+        ${l.carte.b.map(b => `
+          <div class="cm-branche" style="--bc:${pr.couleur};--bt:${pr.tint}">
+            <div class="cm-branche-titre" dir="auto">${esc(b.t)}</div>
+            <div class="cm-feuilles">
+              ${b.f.map(f => `<div class="cm-feuille cm-feuille-txt" dir="auto">${esc(f)}</div>`).join("")}
+            </div>
+          </div>`).join("")}
+      </div>
+    </div>
+    <div class="encouragement">🧠 ${rtl ? "أعد رسم الخريطة من الذاكرة — أفضل طريقة للمراجعة !" : "Redessine cette carte de mémoire : c'est la meilleure des révisions !"}</div>`;
 }
 
 /* ---------- Onglet Cours ---------- */
