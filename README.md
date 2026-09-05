@@ -49,6 +49,32 @@ méthode du Liban) — avec des contenus pédagogiques originaux :
 - **Motivation** : points ⭐, étoiles par leçon, badges (50/150/300/500 points…), confettis 🎉 — progression sauvegardée dans le navigateur (aucune donnée envoyée).
 - **Accents disciplinés** : dans les leçons d'homophones (a/à, ou/où…), les accents comptent vraiment !
 
+## ➕ Ajouter une matière (le squelette est prêt !)
+
+L'application prévoit déjà les emplacements : **Langue arabe, Éducation islamique, Anglais,
+Sciences, Français 1AC** (cartes « 🔒 en préparation » sur l'accueil). Deux façons de les remplir :
+
+### Option A — Base au format « base-1ac-maroc » (recommandé, automatique)
+
+Si tu fournis une base avec la même structure que les maths
+(`<chapitre>/{01-cours,02-resume,03-exercices,04-corriges,05-devoir}.html`) :
+
+```bash
+python convert_base.py <dossier_chapitres> <id_domaine> "<niveau>" js/data-<matiere>.js
+# exemple :
+python convert_base.py ../base-1ac-maroc/docs/01-arabe arabe "1re année collège · Maroc" js/data-arabe.js
+```
+
+Le convertisseur extrait tout automatiquement : cours, fiches résumé, exercices avec leurs
+corrigés cachés, devoirs. Puis deux petites retouches :
+1. `index.html` : ajouter `<script src="js/data-<matiere>.js"></script>` avant `js/app.js`
+2. `js/app.js` : dans `MATIERES`, mettre `ok: true` pour la matière
+
+### Option B — Leçons rédigées à la main
+
+Copier [`js/data-modele.js`](js/data-modele.js) (entièrement commenté, avec les 4 types
+d'exercices) et remplir. Mêmes étapes 1 et 2 que ci-dessus.
+
 ## 🛠️ Technique (pour les parents)
 
 - Application **100 % statique** : HTML + CSS + JavaScript, **zéro dépendance**, zéro build.
@@ -98,9 +124,11 @@ avec les `domaine` correspondants (ajouter le domaine dans `DOMAINES` et `ORDRE_
 
 - [x] Français — 5e/EB7 (20 unités + grammaire + conjugaison + orthographe + évaluations)
 - [x] Mathématiques — 1AC Maroc (21 chapitres, 375 exercices)
-- [ ] Arabe — 1AC Maroc
-- [ ] Anglais — 1AC Maroc
-- [ ] Éducation islamique — 1AC Maroc
+- [ ] Langue arabe — 1AC Maroc *(squelette prêt, base à fournir)*
+- [ ] Éducation islamique — 1AC Maroc *(squelette prêt, base à fournir)*
+- [ ] Anglais — 1AC Maroc *(squelette prêt, base à fournir)*
+- [ ] Sciences (PC + SVT) — 1AC Maroc *(squelette prêt, base à fournir)*
+- [ ] Français 1AC Maroc *(squelette prêt, base à fournir)*
 - [ ] Mode « dictée lue par l'ordinateur » (synthèse vocale)
 
 ## 📄 Notes

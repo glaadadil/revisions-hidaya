@@ -4,14 +4,26 @@
    ============================================================ */
 "use strict";
 
-/* ---------- Fusion des données ---------- */
+/* ---------- Fusion des données ----------
+   Pour activer une nouvelle matière : ajouter son fichier de données
+   (js/data-<matiere>.js) dans index.html, puis passer ok: true ici.
+   Le convertisseur convert_base.py génère les fichiers de données
+   depuis une base au format « base-1ac-maroc » (docs/XX-matiere/…). */
 const MATIERES = [
   { id: "francais", nom: "Français", icone: "📖", desc: "20 unités du manuel + grammaire, conjugaison, orthographe", ok: true,
     domaines: ["textes", "grammaire", "conjugaison", "orthographe", "defis"] },
   { id: "maths", nom: "Mathématiques", icone: "🔢", desc: "21 chapitres du programme 1AC (Maroc)", ok: true,
     domaines: ["maths"] },
-  { id: "anglais",  nom: "Anglais", icone: "🇬🇧", desc: "Bientôt disponible…", ok: false },
-  { id: "sciences", nom: "Sciences", icone: "🔬", desc: "Bientôt disponible…", ok: false }
+  { id: "arabe", nom: "Langue arabe", icone: "🕌", desc: "En préparation — base à fournir", ok: false,
+    domaines: ["arabe"] },
+  { id: "islamique", nom: "Éducation islamique", icone: "🕋", desc: "En préparation — base à fournir", ok: false,
+    domaines: ["islamique"] },
+  { id: "anglais", nom: "Anglais", icone: "🇬🇧", desc: "En préparation — base à fournir", ok: false,
+    domaines: ["anglais"] },
+  { id: "sciences", nom: "Sciences", icone: "🔬", desc: "Physique-chimie & SVT — base à fournir", ok: false,
+    domaines: ["sciences"] },
+  { id: "francais1ac", nom: "Français 1AC (Maroc)", icone: "🇫🇷", desc: "Programme marocain — base à fournir", ok: false,
+    domaines: ["francais1ac"] }
 ];
 
 const DOMAINES = {
@@ -20,7 +32,12 @@ const DOMAINES = {
   conjugaison: { nom: "Conjugaison",         icone: "⏰", desc: "Les temps avec tableaux et exercices" },
   orthographe: { nom: "Orthographe & Vocabulaire", icone: "🔤", desc: "Homophones, accords, mots" },
   defis:       { nom: "Défis & Évaluations", icone: "🎯", desc: "Évaluations blanches et dictées" },
-  maths:       { nom: "Programme 1AC",       icone: "📐", desc: "21 chapitres : numérique, algèbre, géométrie, statistiques" }
+  maths:       { nom: "Programme 1AC",       icone: "📐", desc: "21 chapitres : numérique, algèbre, géométrie, statistiques" },
+  arabe:       { nom: "Programme 1AC",       icone: "📜", desc: "Chapitres du programme" },
+  islamique:   { nom: "Programme 1AC",       icone: "🕋", desc: "Chapitres du programme" },
+  anglais:     { nom: "Programme 1AC",       icone: "🌐", desc: "Chapitres du programme" },
+  sciences:    { nom: "Programme 1AC",       icone: "⚗️", desc: "Chapitres du programme" },
+  francais1ac: { nom: "Programme 1AC",       icone: "📖", desc: "Chapitres du programme" }
 };
 
 const ORDRE_DOMAINES = ["textes", "grammaire", "conjugaison", "orthographe", "defis", "maths"];
