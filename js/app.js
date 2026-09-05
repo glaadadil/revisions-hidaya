@@ -400,6 +400,7 @@ function rendreLecon(l) {
   else if (ongletActif === "exercices") rendreExercices(zone, l);
   else rendreDevoir(zone, l);
   appliquerKaTeX(zone);
+  appliquerKaTeX(document.querySelector(".lecon-objectifs"));
 }
 
 /* Rendu des formules mathématiques (KaTeX, si disponible) */
