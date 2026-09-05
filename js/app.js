@@ -792,21 +792,20 @@ function pageReglages() {
    La carte démarre sur sa racine ; chaque clic déplie un niveau :
    racine → branches → feuilles. Re-clic pour replier. */
 function cmxNoeud(node) {
-  const { t, chemin, html, couleur, enfants, lien, statut } = node;
+  const { t, chemin, html, couleur, enfants, lien, statut, racine } = node;
   const aEnfants = enfants && enfants.length > 0;
-  const chev = aEnfants ? `<span class="cmx-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>` : `<span class="cmx-puce"></span>`;
+  const chev = aEnfants
+    ? `<span class="cmx-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>`
+    : `<span class="cmx-puce"></span>`;
   const contenu = lien
     ? `<a class="cmx-titre" href="${lien}" dir="auto">${html}</a>`
     : `<span class="cmx-titre" dir="auto">${html}</span>`;
-  return `
-    <div class="cmx-noeud ${aEnfants ? "a-enfants" : "feuille"} ${statut ? "st-" + statut : ""}" style="${couleur ? `--nbc:${couleur}` : ""}">
-      ${aEnfants
-        ? `<button class="cmx-bouton" data-cmx="${chemin}">${chev}<span class="cmx-carte">${contenu}</span></button>`
-        : `<span class="cmx-carte">${chev}${contenu}</span>`}
-      ${aEnfants ? `<div class="cmx-enfants" data-cmx-enfants="${chemin}" hidden>
-        ${enfants.map(c => cmxNoeud(c)).join("")}
-      </div>` : ""}
-    </div>`;
+  const carte = aEnfants
+    ? `<button class="cmx-bouton" data-cmx="${chemin}">${chev}<span class="cmx-carte">${contenu}</span></button>`
+    : `<span class="cmx-carte">${chev}${contenu}</span>`;
+  const noeud = `<div class="cmx-noeud ${aEnfants ? "a-enfants" : "feuille"} ${racine ? "racine" : ""}" style="${couleur ? `--nbc:${couleur}` : ""}">${carte}</div>`;
+  if (!aEnfants) return `<div class="cmg-ramifie">${noeud}</div>`;
+  return `<div class="cmg-ramifie">${noeud}<div class="cmg-enfants" data-cmx-enfants="${chemin}" hidden>${enfants.map(c => cmxNoeud(c)).join("")}</div></div>`;
 }
 
 function cmxBrancher(conteneur) {
@@ -821,6 +820,17 @@ function cmxBrancher(conteneur) {
       b.classList.toggle("ouvert", !ouvert);
       const carte = b.querySelector(".cmx-carte");
       if (carte) carte.classList.toggle("ouvert", !ouvert);
+      // garder le parent ET le début des nouvelles branches visibles
+      if (!ouvert) {
+        const boite = b.closest(".cmx");
+        if (boite) {
+          const r = enfants.getBoundingClientRect();
+          const bb = boite.getBoundingClientRect();
+          const besoin = Math.min(r.width, 300);
+          const dispo = bb.right - r.left;
+          if (dispo < besoin) boite.scrollLeft += (besoin - dispo);
+        }
+      }
     });
   });
 }
@@ -840,6 +850,7 @@ function carteMentaleMatiere(mid) {
       ${cmxNoeud({
         t: pr.nomFr || pr.nom,
         chemin: "r",
+        racine: true,
         html: `${pr.icone} ${pr.nomFr || pr.nom}`,
         couleur: pr.couleur,
         enfants: themes.map((t, i) => ({
@@ -868,6 +879,7 @@ function carteMentaleLecon(l) {
       ${cmxNoeud({
         t: l.titre,
         chemin: "r",
+        racine: true,
         html: esc(l.titre),
         couleur: pr.couleur,
         enfants: l.carte.b.map((b, i) => ({

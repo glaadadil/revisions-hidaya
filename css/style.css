@@ -894,3 +894,40 @@ a.cm-feuille:hover { border-color: var(--bc, var(--primaire)); transform: transl
 .cmx-feuille.st-terminee::before { content: "✓ "; color: var(--vert-fonce); font-weight: 900; }
 .cmx-feuille.st-terminee .cmx-titre { color: var(--vert-fonce); }
 .cmx-aide { text-align: center; color: var(--gris); font-size: .85rem; font-weight: 600; margin-top: 16px; }
+
+/* ---------- Schéma horizontal qui se développe (NotebookLM) ---------- */
+.cmx { overflow-x: auto; overflow-y: hidden; padding: 10px 4px 16px; }
+.cmg-ramifie { display: flex; align-items: center; flex-wrap: nowrap; }
+.cmx-noeud { flex-shrink: 0; }
+.cmx-noeud .cmx-carte { max-width: 270px; }
+.cmx-noeud.feuille .cmx-carte { max-width: 240px; }
+.cmx-noeud.racine .cmx-carte { max-width: 300px; }
+
+.cmg-enfants {
+  display: flex; flex-direction: column; gap: 12px;
+  margin-left: 0; position: relative;
+  justify-content: center;
+  animation: cmx-apparait .28s ease;
+}
+/* tronc vertical reliant les enfants entre eux */
+.cmg-enfants::before {
+  content: ""; position: absolute;
+  left: -21px; top: 26px; height: max(0px, calc(100% - 52px));
+  width: 2px; background: #d5daea; border-radius: 2px;
+}
+/* trait horizontal parent → enfant */
+.cmg-enfants > .cmg-ramifie { position: relative; padding-left: 21px; }
+.cmg-enfants > .cmg-ramifie::before {
+  content: ""; position: absolute; left: -21px; top: 50%;
+  width: 21px; height: 2px; background: #d5daea;
+}
+/* la carte du parent garde un petit trait sortant à droite quand dépliée */
+.cmx-bouton.ouvert .cmx-carte, .cmx-noeud.a-enfants.ouvert .cmx-carte {
+  border-top-right-radius: 5px; border-bottom-right-radius: 5px;
+}
+
+@media (max-width: 640px) {
+  .cmx-noeud .cmx-carte { max-width: 220px; font-size: .85rem; }
+  .cmx-noeud.racine .cmx-carte { max-width: 240px; }
+  .cmg-enfants { gap: 10px; }
+}
