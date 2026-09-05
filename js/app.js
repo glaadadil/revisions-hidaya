@@ -343,33 +343,90 @@ function brancherEdtAccueil() {
   });
 }
 
+/* ---------- Accueil : ambiance ---------- */
+const PHRASES_JOUR = [
+  "Un petit pas chaque jour construit un grand chemin.",
+  "Bien réviser, c'est comprendre une fois et revoir au bon moment.",
+  "Organise ton travail : ton travail s'occupera de toi.",
+  "Cinq minutes ce soir valent une heure la veille de l'examen.",
+  "Comprendre est la moitié du chemin — réviser est l'autre moitié.",
+  "Ce que tu écris ta main le retient ; ce que tu expliques ton cœur le garde.",
+  "Une leçon relue le soir est une leçon à moitié apprise pour toujours.",
+  "La régularité gagne toujours contre le hasard.",
+  "Chaque case cochée est une promesse tenue à toi-même.",
+  "Apprendre aujourd'hui, c'est se simplifier demain."
+];
+function phraseDuJour() {
+  const d = new Date();
+  const jour = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
+  return PHRASES_JOUR[jour % PHRASES_JOUR.length];
+}
+function salutation() {
+  const h = new Date().getHours();
+  return h < 12 ? "Bonjour" : (h < 18 ? "Bon après-midi" : "Bonsoir");
+}
+
 /* ---------- Page : Accueil ---------- */
 function pageAccueil() {
   majBoutonRetour(null);
   document.title = "Les Révisions d'Hidaya";
   const p = chargerProgress();
-  const badges = calculerBadges(p);
   const dernier = localStorage.getItem("hidaya_last");
   const derniereLecon = dernier && INDEX_LECONS[dernier] ? INDEX_LECONS[dernier] : null;
-  const nTerminees = Object.keys(INDEX_LECONS).filter(id => {
-    const l = INDEX_LECONS[id];
-    return leconsDuDomaine(l.domaine).includes(l) && statutLecon(l) === "terminee";
-  }).length;
-  const nDevoirs = Object.values(p.lecons).filter(s => s.devoir).length;
+  const aujourdhui = new Date();
+  const dateLongue = aujourdhui.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
 
   APP.innerHTML = `
     <div class="accueil-bonjour">
-      <h1>Bonjour Hidaya</h1>
-      <p>Choisis ta matière, puis la leçon vue en classe — ou celle qui arrive.
-         Chaque leçon affiche clairement ce que tu as accompli et ce qu'il te reste à faire.</p>
+      <h1>${salutation()} Hidaya <span class="petit-coeur">💗</span></h1>
+      <p class="bonjour-date">${dateLongue}</p>
+      <p class="phrase-jour">« ${phraseDuJour()} »</p>
     </div>
 
-    <div class="statistiques">
-      <div class="stat-carte"><div class="chiffre">${p.points}</div><div class="etiquette">Points cumulés</div></div>
-      <div class="stat-carte"><div class="chiffre">${nTerminees}<span style="color:var(--gris);font-size:1rem;font-weight:600"> / ${Object.keys(INDEX_LECONS).length}</span></div><div class="etiquette">Leçons terminées</div></div>
-      <div class="stat-carte"><div class="chiffre">${nDevoirs}</div><div class="etiquette">Devoirs rendus</div></div>
-      <div class="stat-carte"><div class="chiffre">${badges.gagnes.length}<span style="color:var(--gris);font-size:1rem;font-weight:600"> / ${badges.tous.length}</span></div><div class="etiquette">Récompenses</div></div>
-    </div>
+    <section class="edt-section">
+      <div class="edt-tete">
+        <h2>🏫 Ma journée scolaire</h2>
+        <a class="btn btn-secondaire btn-petit" href="#/edt">✏️ Mon emploi du temps</a>
+      </div>
+      ${(() => {
+        const edt = chargerEdt();
+        const nbMats = new Set(Object.values(edt).flat()).size;
+        if (nbMats === 0) {
+          return `<div class="edt-vide gros">
+            <p><strong>La joie de l'organisation commence ici ✨</strong><br>
+               Dis-moi quelles matières tu as chaque jour, et je te montrerai chaque soir
+               quoi réviser — <em>hier · aujourd'hui · demain</em>.</p>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+              <a class="btn btn-primaire" href="#/edt">✏️ Créer mon emploi du temps</a>
+              <button class="btn btn-secondaire" id="edt-semaine-type">⚡ Essayer une semaine type</button>
+            </div>
+          </div>`;
+        }
+        const labels = [
+          { j: 0, t: "Hier", d: dateDecalage(-1) },
+          { j: 1, t: "Aujourd'hui", d: dateDecalage(0) },
+          { j: 2, t: "Demain", d: dateDecalage(1) }
+        ];
+        // petit bonheur : compter les révisions du jour
+        const matsAuj = edt[JOUR_PAR_INDEX[new Date().getDay()]] || [];
+        const suivi = chargerSuiviEdt();
+        const revAuj = matsAuj.filter(mid => suivi[cleDate(new Date()) + "|" + mid]).length;
+        const badgeJour = matsAuj.length
+          ? `<span class="edt-compteur-jour">${revAuj}/${matsAuj.length} révisée${matsAuj.length > 1 ? "s" : ""} aujourd'hui</span>` : "";
+        return `
+        <div class="edt-tete-sous">
+          <span class="edt-intro">Ce que ta semaine te demande, en douceur :</span>
+          ${badgeJour}
+        </div>
+        <div class="edt-onglets">
+          ${labels.map(l => `
+            <button class="edt-onglet ${ongletJourEdt === l.j ? "actif" : ""}" data-j="${l.j}">
+              <b>${l.t}</b><small>${nomDateCourt(l.d)}</small>
+            </button>`).join("")}
+        </div>
+        <div class="edt-contenu">${rendreOngletJour(ongletJourEdt)}</div>`;
+      })()}
+    </section>
 
     ${derniereLecon ? `
     <a class="reprendre" href="#/lecon/${derniereLecon.id}">
@@ -384,40 +441,7 @@ function pageAccueil() {
       <span class="sous-f">Organise toi-même tes révisions, jour par jour ${nbTachesPlanning() ? "· " + nbTachesPlanning() + " séance" + (nbTachesPlanning() > 1 ? "s" : "") + " programmée" + (nbTachesPlanning() > 1 ? "s" : "") : "· commence maintenant"}</span></span>
     </a>
 
-    <section class="edt-section">
-      <div class="edt-tete">
-        <h2>🏫 Ma semaine scolaire</h2>
-        <a class="btn btn-secondaire btn-petit" href="#/edt">✏️ Modifier mon emploi du temps</a>
-      </div>
-      ${(() => {
-        const edt = chargerEdt();
-        const nbMats = new Set(Object.values(edt).flat()).size;
-        if (nbMats === 0) {
-          return `<div class="edt-vide gros">
-            <p><strong>Renseigne ton emploi du temps scolaire</strong> : dis-moi quelles matières tu as
-               chaque jour, et je te montrerai ici ce qu'il faut réviser <em>hier · aujourd'hui · demain</em>.</p>
-            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-              <a class="btn btn-primaire" href="#/edt">✏️ Créer mon emploi du temps</a>
-              <button class="btn btn-secondaire" id="edt-semaine-type">⚡ Remplir une semaine type</button>
-            </div>
-          </div>`;
-        }
-        const labels = [
-          { j: 0, t: "Hier", d: dateDecalage(-1) },
-          { j: 1, t: "Aujourd'hui", d: dateDecalage(0) },
-          { j: 2, t: "Demain", d: dateDecalage(1) }
-        ];
-        return `
-        <div class="edt-onglets">
-          ${labels.map(l => `
-            <button class="edt-onglet ${ongletJourEdt === l.j ? "actif" : ""}" data-j="${l.j}">
-              <b>${l.t}</b><small>${nomDateCourt(l.d)}</small>
-            </button>`).join("")}
-        </div>
-        <div class="edt-contenu">${rendreOngletJour(ongletJourEdt)}</div>`;
-      })()}
-    </section>
-
+    <h2 class="titre-section">Toutes mes matières</h2>
     <section class="grille-matieres">
       ${ORDRE_MATIERES.map(mid => {
         const pr = profilDe(mid);
