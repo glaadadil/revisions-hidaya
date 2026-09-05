@@ -667,3 +667,51 @@ textarea.reponse-libre:focus { outline: none; border-color: var(--accent); }
   .champ-large { min-width: 0; }
   .matiere-grande-icone { display: none; }
 }
+
+/* ---------- Emploi du temps scolaire (accueil) ---------- */
+.edt-section {
+  background: var(--blanc); border-radius: 22px; padding: 20px 22px;
+  box-shadow: var(--ombre); border: 1px solid #eef0f7; margin-bottom: 24px;
+}
+.edt-tete { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.edt-tete h2 { font-size: 1.15rem; font-weight: 800; color: var(--encre); margin: 0; }
+
+.edt-onglets {
+  display: flex; gap: 6px; background: var(--gris-clair);
+  border-radius: 14px; padding: 5px; margin-bottom: 14px;
+}
+.edt-onglet {
+  flex: 1; border: none; background: transparent; cursor: pointer;
+  border-radius: 11px; padding: 8px 10px; font-family: inherit;
+  color: var(--gris); transition: all .15s; text-align: center;
+}
+.edt-onglet b { display: block; font-size: .92rem; font-weight: 800; }
+.edt-onglet small { font-size: .7rem; font-weight: 600; opacity: .8; }
+.edt-onglet.actif { background: var(--blanc); color: var(--primaire); box-shadow: 0 2px 8px rgba(15,23,42,.1); }
+
+.edt-phrase { font-weight: 700; color: var(--encre-doux); margin: 0 0 12px; font-size: .92rem; }
+.edt-liste { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.edt-carte {
+  display: flex; flex-direction: column; gap: 10px;
+  background: #fbfbfe; border: 1px solid #e8eaf3; border-left: 5px solid var(--acc, var(--primaire));
+  border-radius: 14px; padding: 13px 15px;
+}
+.edt-mat { display: flex; gap: 11px; align-items: flex-start; }
+.edt-icone {
+  width: 42px; height: 42px; border-radius: 13px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
+}
+.edt-nom { font-weight: 800; font-size: .95rem; color: var(--encre); }
+.edt-lecon { font-size: .82rem; color: var(--encre-doux); font-weight: 600; line-height: 1.4; }
+.edt-lecon strong { color: var(--acc, var(--primaire)); }
+.edt-action { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.edt-revise { font-weight: 800; color: var(--vert-fonce); font-size: .88rem; }
+.edt-vide { text-align: center; color: var(--gris); padding: 18px; font-weight: 600; }
+.edt-vide.gros { padding: 30px 20px; }
+.edt-vide.gros p { max-width: 520px; margin: 0 auto 16px; color: var(--encre-doux); }
+
+/* Éditeur d'emploi du temps */
+.edt-editor { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; margin-bottom: 18px; }
+.edt-jour .jour-tete { flex-direction: column; align-items: stretch; gap: 8px; }
+.edt-ajout { width: 100%; font-size: .82rem; }
+.edt-actions-bas { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }

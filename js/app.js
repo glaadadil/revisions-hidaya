@@ -203,6 +203,7 @@ function naviguer() {
   if (parts.length === 0) { majSidebar("accueil"); return pageAccueil(); }
   if (parts[0] === "reglages") { majSidebar("reglages"); return pageReglages(); }
   if (parts[0] === "planning") { majSidebar("planning"); return pagePlanning(); }
+  if (parts[0] === "edt") { majSidebar("accueil"); return pageEdt(); }
   if (parts[0] === "matiere" && parts[1]) { majSidebar(parts[1]); return pageMatiere(parts[1]); }
   if (parts[0] === "domaine" && parts[1]) { majSidebar(matiereDuDomaine(parts[1])); return pageDomaine(parts[1]); }
   if (parts[0] === "lecon" && parts[1]) {
@@ -224,6 +225,122 @@ function majBoutonRetour(cible) {
   const btn = document.getElementById("btn-retour");
   if (cible) { btn.hidden = false; btn.onclick = () => aller(cible); }
   else btn.hidden = true;
+}
+
+/* ---------- Emploi du temps scolaire ----------
+   Hidaya saisit ses cours par jour une seule fois ; l'accueil devient
+   un compagnon quotidien : Hier (ancrer) · Aujourd'hui (réviser) ·
+   Demain (anticiper). */
+const JOUR_PAR_INDEX = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+const JOURS_EDT = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+const CLE_EDT = "hidaya_edt_v1";
+const CLE_EDT_SUIVI = "hidaya_edt_suivi_v1";
+let ongletJourEdt = 1; // 0 = hier · 1 = aujourd'hui · 2 = demain
+
+const SEMAINE_TYPE = {
+  Lundi: ["maths", "arabe", "svt"],
+  Mardi: ["francais", "anglais", "pc"],
+  Mercredi: ["maths", "ss", "info"],
+  Jeudi: ["arabe", "anglais", "svt"],
+  Vendredi: ["francais", "maths", "pc"],
+  Samedi: ["arabe", "info", "ss"],
+  Dimanche: []
+};
+
+function chargerEdt() {
+  try { return JSON.parse(localStorage.getItem(CLE_EDT)) || {}; } catch { return {}; }
+}
+function sauverEdt(edt) { localStorage.setItem(CLE_EDT, JSON.stringify(edt)); }
+function chargerSuiviEdt() {
+  try { return JSON.parse(localStorage.getItem(CLE_EDT_SUIVI)) || {}; } catch { return {}; }
+}
+function dateDecalage(n) { const d = new Date(); d.setDate(d.getDate() + n); return d; }
+function cleDate(d) { return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); }
+function nomDateCourt(d) {
+  return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+}
+
+/* La leçon à travailler pour une matière : d'abord celle en cours, sinon la prochaine. */
+function leconConseillee(mid) {
+  const lecons = domainesDe(mid).flatMap(d => leconsDuDomaine(d))
+    .slice().sort((a, b) => (a.unite || 0) - (b.unite || 0));
+  if (lecons.length === 0) return null;
+  return lecons.find(l => statutLecon(l) === "encours")
+      || lecons.find(l => statutLecon(l) === "aucune")
+      || null;
+}
+
+function carteJourMatiere(mid, mode, dateCle) {
+  const pr = profilDe(mid);
+  const l = leconConseillee(mid);
+  const suivi = chargerSuiviEdt();
+  const revise = !!suivi[dateCle + "|" + mid];
+  let action = "";
+  if (mode === "hier") {
+    action = revise
+      ? `<span class="edt-revise">✅ Révisé — bien joué !</span>`
+      : `<button class="btn btn-oui btn-petit" data-reviser="${mid}">✔ J'ai révisé (+5 ⭐)</button>`;
+  } else if (!l) {
+    action = `<span class="edt-revise">🎉 Tout à jour !</span>`;
+  } else if (mode === "demain") {
+    action = `<a class="btn btn-secondaire btn-petit" href="#/lecon/${l.id}">👀 Lire en avant-première</a>`;
+  } else {
+    action = `<a class="btn btn-primaire btn-petit" href="#/lecon/${l.id}">→ Réviser la leçon</a>`;
+  }
+  return `
+    <div class="edt-carte" style="--acc:${pr.couleur};--acc2:${pr.couleur2};--tint:${pr.tint}">
+      <div class="edt-mat"><span class="edt-icone" style="background:${pr.tint}">${pr.icone}</span>
+        <div><b class="edt-nom" dir="auto">${pr.nom}${pr.nomFr ? `<span class="mat-nomfr"> · ${pr.nomFr}</span>` : ""}</b>
+        <div class="edt-lecon" dir="auto">${l
+          ? (mode === "demain"
+              ? "À préparer : <strong>" + esc(l.titre) + "</strong>"
+              : "Leçon conseillée : <strong>" + esc(l.titre) + "</strong>")
+          : "Toutes les leçons sont terminées"}</div></div>
+      </div>
+      <div class="edt-action">${action}</div>
+    </div>`;
+}
+
+function rendreOngletJour(n) {
+  const d = dateDecalage(n - 1);
+  const nomJour = JOUR_PAR_INDEX[d.getDay()];
+  const mats = chargerEdt()[nomJour] || [];
+  const dateCle = cleDate(d);
+  const mode = n === 0 ? "hier" : (n === 1 ? "aujourdhui" : "demain");
+  const titres = {
+    hier: "🧠 Consolide — le meilleur moment pour ancrer la leçon, c'est le lendemain !",
+    aujourdhui: "🎯 Révise ce soir ce que tu as vu en classe aujourd'hui.",
+    demain: "🔮 Anticipe — 5 minutes de lecture ce soir, et demain tu suivras sans effort."
+  };
+  if (mats.length === 0) {
+    return `<div class="edt-vide">
+      <p>${mode === "aujourdhui" ? "Pas de cours aujourd'hui 🌴 — parfait pour avancer ton planning !" : "Pas de cours ce jour-là."}</p>
+      <a class="btn btn-secondaire btn-petit" href="#/planning">🗓️ Voir mon planning</a>
+    </div>`;
+  }
+  return `
+    <p class="edt-phrase">${titres[mode]}</p>
+    <div class="edt-liste">
+      ${mats.map(mid => carteJourMatiere(mid, mode, dateCle)).join("")}
+    </div>`;
+}
+
+function brancherEdtAccueil() {
+  document.querySelectorAll(".edt-onglet").forEach(b => {
+    b.addEventListener("click", () => { ongletJourEdt = +b.dataset.j; pageAccueil(); });
+  });
+  document.querySelectorAll("[data-reviser]").forEach(b => {
+    b.addEventListener("click", () => {
+      const d = dateDecalage(ongletJourEdt - 1);
+      const cle = cleDate(d) + "|" + b.dataset.reviser;
+      const suivi = chargerSuiviEdt();
+      suivi[cle] = true;
+      localStorage.setItem(CLE_EDT_SUIVI, JSON.stringify(suivi));
+      ajouterPoints(5);
+      confettis();
+      pageAccueil();
+    });
+  });
 }
 
 /* ---------- Page : Accueil ---------- */
@@ -267,6 +384,40 @@ function pageAccueil() {
       <span class="sous-f">Organise toi-même tes révisions, jour par jour ${nbTachesPlanning() ? "· " + nbTachesPlanning() + " séance" + (nbTachesPlanning() > 1 ? "s" : "") + " programmée" + (nbTachesPlanning() > 1 ? "s" : "") : "· commence maintenant"}</span></span>
     </a>
 
+    <section class="edt-section">
+      <div class="edt-tete">
+        <h2>🏫 Ma semaine scolaire</h2>
+        <a class="btn btn-secondaire btn-petit" href="#/edt">✏️ Modifier mon emploi du temps</a>
+      </div>
+      ${(() => {
+        const edt = chargerEdt();
+        const nbMats = new Set(Object.values(edt).flat()).size;
+        if (nbMats === 0) {
+          return `<div class="edt-vide gros">
+            <p><strong>Renseigne ton emploi du temps scolaire</strong> : dis-moi quelles matières tu as
+               chaque jour, et je te montrerai ici ce qu'il faut réviser <em>hier · aujourd'hui · demain</em>.</p>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+              <a class="btn btn-primaire" href="#/edt">✏️ Créer mon emploi du temps</a>
+              <button class="btn btn-secondaire" id="edt-semaine-type">⚡ Remplir une semaine type</button>
+            </div>
+          </div>`;
+        }
+        const labels = [
+          { j: 0, t: "Hier", d: dateDecalage(-1) },
+          { j: 1, t: "Aujourd'hui", d: dateDecalage(0) },
+          { j: 2, t: "Demain", d: dateDecalage(1) }
+        ];
+        return `
+        <div class="edt-onglets">
+          ${labels.map(l => `
+            <button class="edt-onglet ${ongletJourEdt === l.j ? "actif" : ""}" data-j="${l.j}">
+              <b>${l.t}</b><small>${nomDateCourt(l.d)}</small>
+            </button>`).join("")}
+        </div>
+        <div class="edt-contenu">${rendreOngletJour(ongletJourEdt)}</div>`;
+      })()}
+    </section>
+
     <section class="grille-matieres">
       ${ORDRE_MATIERES.map(mid => {
         const pr = profilDe(mid);
@@ -283,6 +434,13 @@ function pageAccueil() {
       }).join("")}
     </section>
   `;
+  brancherEdtAccueil();
+  const btnST = document.getElementById("edt-semaine-type");
+  if (btnST) btnST.addEventListener("click", () => {
+    sauverEdt(JSON.parse(JSON.stringify(SEMAINE_TYPE)));
+    confettis();
+    pageAccueil();
+  });
 }
 
 function compterLeconsFaites() {
@@ -468,6 +626,77 @@ function majCompteursSidebar() {
     const faites = Object.values(p.taches || {}).reduce((n2, l) => n2 + l.filter(t => t.fait).length, 0);
     pl.textContent = n ? faites + "/" + n : "";
   }
+}
+
+/* ---------- Page : Éditeur d'emploi du temps ---------- */
+function pageEdt() {
+  majBoutonRetour("#/");
+  document.title = "Emploi du temps — Révisions d'Hidaya";
+  const edt = chargerEdt();
+  APP.innerHTML = `
+    <h1 class="titre-page">✏️ Mon emploi du temps scolaire</h1>
+    <p class="sous-titre">Pour chaque jour, ajoute les matières que tu as en classe.
+       L'accueil t'affichera ensuite quoi réviser <strong>hier · aujourd'hui · demain</strong>.</p>
+    <div class="edt-editor">
+      ${JOURS_EDT.map(jour => {
+        const mats = edt[jour] || [];
+        return `
+        <div class="jour-carte edt-jour" data-jour-edt="${jour}">
+          <div class="jour-tete"><b>${jour}</b>
+            <select class="champ-select edt-ajout" data-jour="${jour}">
+              <option value="">+ ajouter…</option>
+              ${ORDRE_MATIERES.filter(mid => !mats.includes(mid)).map(mid =>
+                `<option value="${mid}">${profilDe(mid).nomFr || profilDe(mid).nom}</option>`).join("")}
+            </select>
+          </div>
+          ${mats.length === 0 ? `<div class="jour-vide">Aucun cours</div>` : `
+          <ul class="jour-taches">
+            ${mats.map(mid => {
+              const pr = profilDe(mid);
+              return `<li class="tache">
+                <span class="tache-pt" style="background:${pr.couleur}"></span>
+                <span class="tache-txt" dir="auto">${pr.nom}</span>
+                <button class="tache-suppr" data-retirer="${mid}" data-jour="${jour}" title="Retirer">✕</button>
+              </li>`;
+            }).join("")}
+          </ul>`}
+        </div>`;
+      }).join("")}
+    </div>
+    <div class="edt-actions-bas">
+      <button class="btn btn-secondaire btn-petit" id="edt-type2">⚡ Utiliser une semaine type</button>
+      <button class="btn btn-danger btn-petit" id="edt-vider">🗑 Tout effacer</button>
+      <a class="btn btn-primaire btn-petit" href="#/">✔ Terminé, voir mon accueil</a>
+    </div>
+  `;
+
+  document.querySelectorAll(".edt-ajout").forEach(sel => {
+    sel.addEventListener("change", () => {
+      if (!sel.value) return;
+      const edt2 = chargerEdt();
+      edt2[sel.dataset.jour] = edt2[sel.dataset.jour] || [];
+      edt2[sel.dataset.jour].push(sel.value);
+      sauverEdt(edt2);
+      pageEdt();
+    });
+  });
+  document.querySelectorAll("[data-retirer]").forEach(b => {
+    b.addEventListener("click", () => {
+      const edt2 = chargerEdt();
+      edt2[b.dataset.jour] = (edt2[b.dataset.jour] || []).filter(m => m !== b.dataset.retirer);
+      sauverEdt(edt2);
+      pageEdt();
+    });
+  });
+  document.getElementById("edt-type2").addEventListener("click", () => {
+    sauverEdt(JSON.parse(JSON.stringify(SEMAINE_TYPE)));
+    confettis();
+    pageEdt();
+  });
+  document.getElementById("edt-vider").addEventListener("click", () => {
+    localStorage.removeItem(CLE_EDT);
+    pageEdt();
+  });
 }
 
 /* ---------- Page : Réglages ---------- */
