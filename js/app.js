@@ -134,6 +134,7 @@ function naviguer() {
   const parts = hash.slice(2).split("/").filter(Boolean);
   window.scrollTo(0, 0);
   if (parts.length === 0) return pageAccueil();
+  if (parts[0] === "reglages") return pageReglages();
   if (parts[0] === "matiere" && parts[1]) return pageMatiere(parts[1]);
   if (parts[0] === "domaine" && parts[1]) return pageDomaine(parts[1]);
   if (parts[0] === "lecon" && parts[1]) return pageLecon(parts[1]);
@@ -154,8 +155,13 @@ function pageAccueil() {
   document.title = "Les Révisions d'Hidaya 📚";
   const p = chargerProgress();
   const badges = calculerBadges(p);
+  const dernier = localStorage.getItem("hidaya_last");
+  const derniereLecon = dernier && INDEX_LECONS[dernier] ? INDEX_LECONS[dernier] : null;
   APP.innerHTML = `
     <section class="accueil-hero">
+      <span class="hero-emoji" style="top:14px;left:22px">✨</span>
+      <span class="hero-emoji" style="bottom:18px;right:26px;animation-delay:1.2s">📚</span>
+      <span class="hero-emoji" style="top:40px;right:80px;animation-delay:.6s">🌟</span>
       <h1>Bonjour Hidaya ! 👋</h1>
       <p>Choisis la matière que tu veux préparer, puis la leçon que tu as vue en classe —
          ou celle qui arrive. Tu trouveras le cours, des exercices et des devoirs
@@ -169,11 +175,18 @@ function pageAccueil() {
         ${badges.tous.map(b => `<span class="badge ${badges.gagnes.includes(b.id) ? "" : "verrouille"}" title="${esc(b.titre)}">${b.icone} ${esc(b.nom)}</span>`).join("")}
       </div>
     </section>
+    ${derniereLecon ? `
+    <a class="carte-continuer" href="#/lecon/${derniereLecon.id}">
+      <span class="play">▶</span>
+      <span>Reprends ta révision
+        <span class="petit">${esc(derniereLecon.icone || "")} ${esc(derniereLecon.titre)}</span>
+      </span>
+    </a>` : ""}
     <section class="grille-cartes">
       ${MATIERES.map(m => `
         <a class="carte-matiere ${m.ok ? "" : "bientot"}" ${m.ok ? `href="#/matiere/${m.id}"` : ""}>
           ${m.ok ? "" : `<span class="badge-verrou">🔒 bientôt</span>`}
-          <span class="icone">${m.icone}</span>
+          <span class="rond-icone">${m.icone}</span>
           <span class="nom">${m.nom}</span>
           <span class="desc">${m.desc}</span>
         </a>`).join("")}
@@ -196,6 +209,62 @@ function calculerBadges(p) {
     { id: "dv5",  nom: "5 devoirs",  icone: "✍️", titre: "Faire 5 devoirs", test: pp => Object.values(pp.lecons).filter(s => s.devoir).length >= 5 }
   ];
   return { tous, gagnes: tous.filter(b => b.test(p)).map(b => b.id) };
+}
+
+/* ---------- Page : Réglages ---------- */
+function pageReglages() {
+  majBoutonRetour("#/");
+  document.title = "Réglages — Révisions d'Hidaya";
+  const p = chargerProgress();
+  const badges = calculerBadges(p);
+  const nDevoirs = Object.values(p.lecons).filter(s => s.devoir).length;
+  APP.innerHTML = `
+    <h1 class="titre-page">⚙️ Réglages</h1>
+    <p class="sous-titre">Ta progression et les réglages de l'application</p>
+
+    <section class="reglages-section">
+      <h2>📊 Ma progression</h2>
+      <div class="reglages-ligne"><span>⭐ Points</span><span class="valeur">${p.points}</span></div>
+      <div class="reglages-ligne"><span>📚 Leçons révisées</span><span class="valeur">${compterLeconsFaites()} / ${Object.keys(INDEX_LECONS).length}</span></div>
+      <div class="reglages-ligne"><span>✍️ Devoirs terminés</span><span class="valeur">${nDevoirs}</span></div>
+      <div class="reglages-ligne"><span>🏅 Badges gagnés</span><span class="valeur">${badges.gagnes.length} / ${badges.tous.length}</span></div>
+    </section>
+
+    <section class="reglages-section">
+      <h2>ℹ️ À propos</h2>
+      <div class="reglages-ligne"><span>🎒 Niveau</span><span class="valeur">5e / EB7 · 1AC</span></div>
+      <div class="reglages-ligne"><span>📴 Mode hors-ligne</span><span class="valeur">Télécharge le ZIP → double-clic sur index.html</span></div>
+      <div class="reglages-ligne"><span>💾 Où sont mes points ?</span><span class="valeur">Dans ce navigateur (rien n'est envoyé nulle part)</span></div>
+    </section>
+
+    <section class="reglages-section">
+      <h2>🔄 Réinitialiser</h2>
+      <div class="zone-danger">
+        <p>Attention : cela efface <strong>tous tes points, tes étoiles et tes badges</strong>.
+           Tes leçons repartiront de zéro. On ne peut pas annuler !</p>
+        <button class="btn btn-danger" id="btn-reset">🔄 Réinitialiser ma progression</button>
+        <div class="confirmation-suppr" id="zone-confirm-reset" hidden>
+          <button class="btn btn-danger btn-petit" id="btn-reset-oui">Oui, tout effacer !</button>
+          <button class="btn btn-secondaire btn-petit" id="btn-reset-non">Annuler</button>
+        </div>
+      </div>
+    </section>
+  `;
+  document.getElementById("btn-reset").addEventListener("click", () => {
+    document.getElementById("zone-confirm-reset").hidden = false;
+    document.getElementById("btn-reset").hidden = true;
+  });
+  document.getElementById("btn-reset-non").addEventListener("click", () => {
+    document.getElementById("zone-confirm-reset").hidden = true;
+    document.getElementById("btn-reset").hidden = false;
+  });
+  document.getElementById("btn-reset-oui").addEventListener("click", () => {
+    localStorage.removeItem(CLE_PROGRESS);
+    localStorage.removeItem("hidaya_last");
+    majScore();
+    confettis();
+    pageAccueil();
+  });
 }
 
 /* ---------- Page : Matière ---------- */
@@ -278,6 +347,7 @@ function pageLecon(idLecon) {
   if (!l) return pageMatiere("francais");
   majBoutonRetour(leconsDuDomaine(l.domaine).length ? "#/domaine/" + l.domaine : "#/matiere/francais");
   ongletActif = "cours";
+  localStorage.setItem("hidaya_last", idLecon);
   rendreLecon(l);
 }
 
@@ -368,7 +438,8 @@ function rendreExercices(zone, l) {
 
 function renduExercice(e, i, l) {
   const num = `<span class="exo-num">${e.badge || i + 1}</span>`;
-  const consigne = `<div class="exo-tete">${num}<span class="exo-consigne">${esc(e.consigne)}</span></div>`;
+  const diffLabel = e.diff === "facile" ? "Facile" : (e.diff === "difficile" ? "Défi" : "Moyen");
+  const consigne = `<div class="exo-tete">${num}<span class="exo-consigne">${esc(e.consigne)}</span><span class="diff-chip ${e.diff || "moyen"}">${diffLabel}</span></div>`;
   let corps = "";
   if (e.type === "qcm") {
     corps = `<div class="exo-question">${e.q}</div>
@@ -443,7 +514,14 @@ function brancherExercice(e, i, l) {
 
 function corrigerExercice(e, i, l) {
   const res = document.getElementById("res-" + i);
-  if (res.dataset.fait) return;
+  const btnCorr = document.querySelector(`#exo-${i} [data-corriger="${i}"]`);
+  // La correction a déjà été affichée une fois : le bouton bascule entre
+  // « cacher » et « revoir » la correction.
+  if (res.dataset.fait) {
+    const cache = res.classList.toggle("cache");
+    if (btnCorr) btnCorr.innerHTML = cache ? "👀 Revoir la correction" : "🙈 Cacher la correction";
+    return;
+  }
   let reussi = false;
   let htmlCorr = "";
 
@@ -509,6 +587,7 @@ function corrigerExercice(e, i, l) {
       majMiniScoreOnglet(st);
     }));
     res.dataset.fait = "1";
+    if (btnCorr) btnCorr.innerHTML = "🙈 Cacher la correction";
     appliquerKaTeX(res);
     return;
   }
@@ -519,6 +598,7 @@ function corrigerExercice(e, i, l) {
     <div class="resultat ${reussi ? "ok" : "ko"}">${reussi ? "Bravo, c'est correct ! ✨" : "Presque ! Regarde la correction ci-dessous. 💡"}</div>
     ${explication}`;
   res.dataset.fait = "1";
+  if (btnCorr) btnCorr.innerHTML = "🙈 Cacher la correction";
   enregistrerExo(l.id, reussi);
   ajouterPoints(reussi ? 10 : 2);
   if (reussi) confettis();
@@ -555,7 +635,12 @@ function rendreDevoir(zone, l) {
   `;
   document.getElementById("devoir-corr").addEventListener("click", () => {
     const zc = document.getElementById("devoir-zone-corr");
-    if (zc.dataset.fait) return;
+    const btnDv = document.getElementById("devoir-corr");
+    if (zc.dataset.fait) {
+      const cache = zc.classList.toggle("cache");
+      btnDv.innerHTML = cache ? "👀 Revoir la correction" : "🙈 Cacher la correction";
+      return;
+    }
     zc.innerHTML = `
       <div class="correction" style="margin-top:12px">
         <div class="titre-corr">🔓 Correction du devoir (modèle)</div>
@@ -565,6 +650,7 @@ function rendreDevoir(zone, l) {
         <button class="btn btn-oui btn-petit" id="dv-oui">✔ Devoir terminé (+15 ⭐)</button>
       </div>`;
     zc.dataset.fait = "1";
+    btnDv.innerHTML = "🙈 Cacher la correction";
     appliquerKaTeX(zc);
     document.getElementById("dv-oui").addEventListener("click", () => {
       enregistrerDevoir(l.id, true);
@@ -581,5 +667,7 @@ function rendreDevoir(zone, l) {
 construireIndex();
 window.addEventListener("hashchange", naviguer);
 document.getElementById("annee").textContent = new Date().getFullYear();
+document.getElementById("btn-reglages").addEventListener("click", () => aller("#/reglages"));
+document.getElementById("logo").addEventListener("click", () => aller("#/"));
 naviguer();
 majScore();
