@@ -296,31 +296,120 @@ function carteJourTache(t, i, nomJour) {
     </div>`;
 }
 
+function carteJourMatiere(mid, mode, dateCle) {
+  const pr = profilDe(mid);
+  const l = leconConseillee(mid);
+  const suivi = chargerSuiviEdt();
+  const revise = !!suivi[dateCle + "|" + mid];
+  let action = "";
+  if (mode === "hier") {
+    action = revise
+      ? `<span class="edt-revise">✅ Révisé — bien joué !</span>`
+      : `<button class="btn btn-oui btn-petit" data-reviser="${mid}">✔ J'ai révisé (+5 ⭐)</button>`;
+  } else if (!l) {
+    action = `<span class="edt-revise">🎉 Tout à jour !</span>`;
+  } else if (mode === "demain") {
+    action = `<a class="btn btn-secondaire btn-petit" href="#/lecon/${l.id}">👀 Lire en avant-première</a>`;
+  } else {
+    action = `<a class="btn btn-primaire btn-petit" href="#/lecon/${l.id}">→ Réviser la leçon</a>`;
+  }
+  return `
+    <div class="edt-carte" style="--acc:${pr.couleur};--acc2:${pr.couleur2};--tint:${pr.tint}">
+      <div class="edt-mat"><span class="edt-icone" style="background:${pr.tint}">${pr.icone}</span>
+        <div><b class="edt-nom" dir="auto">${pr.nom}${pr.nomFr ? `<span class="mat-nomfr"> · ${pr.nomFr}</span>` : ""}</b>
+        <div class="edt-lecon" dir="auto">${l
+          ? (mode === "demain"
+              ? "À préparer : <strong>" + esc(l.titre) + "</strong>"
+              : "Leçon conseillée : <strong>" + esc(l.titre) + "</strong>")
+          : "Toutes les leçons sont terminées"}</div></div>
+      </div>
+      <div class="edt-action">${action}</div>
+    </div>`;
+}
+
 function rendreOngletJour(n) {
   const d = dateDecalage(n - 1);
   const nomJour = JOUR_PAR_INDEX[d.getDay()];
-  const pp = chargerPlanning();
-  const taches = (pp.taches || {})[nomJour] || [];
+  const mats = chargerEdt()[nomJour] || [];
+  const dateCle = cleDate(d);
   const mode = n === 0 ? "hier" : (n === 1 ? "aujourdhui" : "demain");
   const titres = {
-    hier: "🧠 Les révisions d'hier — as-tu tout coché ?",
-    aujourdhui: "🎯 Ta programme du jour — une séance à la fois.",
-    demain: "🔮 Ce qui t'attend demain — prépare-toi en douceur."
+    hier: "🧠 Consolide — le meilleur moment pour ancrer la leçon, c'est le lendemain !",
+    aujourdhui: "🎯 Révise ce soir ce que tu as vu en classe aujourd'hui.",
+    demain: "🔮 Anticipe — 5 minutes de lecture ce soir, et demain tu suivras sans effort."
   };
-  if (taches.length === 0) {
+  if (mats.length === 0) {
     return `<div class="edt-vide">
-      <p>${mode === "aujourdhui"
-        ? "Aucune révision prévue aujourd'hui 🌴 — libre à toi, ou planifie une séance !"
-        : "Aucune révision prévue ce jour-là."}</p>
-      <a class="btn btn-secondaire btn-petit" href="#/planning">➕ Planifier une séance</a>
+      <p>${mode === "aujourdhui" ? "Pas de cours aujourd'hui 🌴 — parfait pour avancer ton planning !" : "Pas de cours ce jour-là."}</p>
     </div>`;
   }
-  const faites = taches.filter(t => t.fait).length;
   return `
-    <p class="edt-phrase">${titres[mode]} <span class="sm-meta" style="margin-left:8px">${faites}/${taches.length} faites</span></p>
+    <p class="edt-phrase">${titres[mode]}</p>
     <div class="edt-liste">
-      ${taches.map((t, i) => carteJourTache(t, i, nomJour)).join("")}
+      ${mats.map(mid => carteJourMatiere(mid, mode, dateCle)).join("")}
     </div>`;
+}
+
+/* ---------- Plan de révision hebdomadaire en 5 colonnes ---------- */
+function rendrePlanSemaine() {
+  const pp = chargerPlanning();
+  const taches = pp.taches || {};
+  const total = Object.values(taches).flat().length;
+  if (total === 0) {
+    return `<div class="edt-vide">
+      <p>Aucune séance planifiée pour l'instant. Remplis ton plan semaine par semaine !</p>
+      <a class="btn btn-primaire btn-petit" href="#/planning">➕ Remplir mon plan de révision</a>
+    </div>`;
+  }
+  const faites = Object.values(taches).flat().filter(t => t.fait).length;
+  const pct = Math.round(100 * faites / total);
+  const colonnes = JOURS_EDT.slice();
+  if ((taches["Samedi"] || []).length + (taches["Dimanche"] || []).length > 0) colonnes.push("Week-end");
+  return `
+    <div class="planning-recap"><div class="planning-barre"><div class="rempli" style="width:${pct}%"></div></div><span>${faites}/${total} séance${total > 1 ? "s" : ""} faite${faites > 1 ? "s" : ""}</span></div>
+    <div class="planning-grille">
+      ${colonnes.map(jour => {
+        let liste;
+        if (jour === "Week-end") {
+          liste = [...(taches["Samedi"] || []).map(t => ({ ...t, jour: "Samedi" })), ...(taches["Dimanche"] || []).map(t => ({ ...t, jour: "Dimanche" }))];
+        } else {
+          liste = (taches[jour] || []).map(t => ({ ...t, jour }));
+        }
+        const nFaites = liste.filter(t => t.fait).length;
+        return `
+        <div class="jour-carte" data-plan-jour="${jour}">
+          <div class="jour-tete"><b>${jour}</b><span class="jour-compte">${nFaites}/${liste.length}</span></div>
+          ${liste.length === 0 ? `<div class="jour-vide">—</div>` : `
+          <ul class="jour-taches">
+            ${liste.map((t, i) => {
+              const l = INDEX_LECONS[t.id];
+              if (!l) return "";
+              const pr = profilDe(matiereDuDomaine(l.domaine) || "francais");
+              return `<li class="tache ${t.fait ? "faite" : ""}">
+                <button class="tache-coche" data-plan-toggle="${t.jour}|${t.id}" title="Marquer faite">${t.fait ? "✓" : ""}</button>
+                <span class="tache-txt" dir="auto"><span class="tache-pt" style="background:${pr.couleur}"></span>${esc(l.titre)}</span>
+              </li>`;
+            }).join("")}
+          </ul>`}
+        </div>`;
+      }).join("")}
+    </div>
+    <div style="text-align:center;margin-top:12px"><a class="btn btn-secondaire btn-petit" href="#/planning">➕ Modifier mon plan de révision</a></div>`;
+}
+
+function brancherPlanSemaine() {
+  document.querySelectorAll("[data-plan-toggle]").forEach(b => b.addEventListener("click", () => {
+    const [jour, id] = b.dataset.planToggle.split("|");
+    const pp = chargerPlanning();
+    pp.taches = pp.taches || {};
+    const t = (pp.taches[jour] || []).find(x => x.id === id);
+    if (!t) return;
+    t.fait = !t.fait;
+    ajouterPoints(t.fait ? 5 : -5);
+    if (t.fait) confettis();
+    sauverPlanning(pp);
+    pageAccueil();
+  }));
 }
 
 /* La grille hebdomadaire de l'emploi du temps, en couleurs de matières. */
@@ -353,16 +442,15 @@ function brancherEdtAccueil() {
   document.querySelectorAll(".edt-onglet").forEach(b => {
     b.addEventListener("click", () => { ongletJourEdt = +b.dataset.j; pageAccueil(); });
   });
-  document.querySelectorAll("[data-jour-fait]").forEach(b => {
+  document.querySelectorAll("[data-reviser]").forEach(b => {
     b.addEventListener("click", () => {
-      const pp = chargerPlanning();
-      pp.taches = pp.taches || {};
-      const t = (pp.taches[b.dataset.jour] || [])[+b.dataset.jourFait];
-      if (!t) return;
-      t.fait = !t.fait;
-      ajouterPoints(t.fait ? 5 : -5);
-      if (t.fait) confettis();
-      sauverPlanning(pp);
+      const d = dateDecalage(ongletJourEdt - 1);
+      const cle = cleDate(d) + "|" + b.dataset.reviser;
+      const suivi = chargerSuiviEdt();
+      suivi[cle] = true;
+      localStorage.setItem(CLE_EDT_SUIVI, JSON.stringify(suivi));
+      ajouterPoints(5);
+      confettis();
       pageAccueil();
     });
   });
@@ -410,7 +498,7 @@ function pageAccueil() {
 
     <section class="edt-section">
       <div class="edt-tete">
-        <h2>🎯 Mes révisions de la semaine</h2>
+        <h2>🏫 Ma journée scolaire</h2>
         <a class="btn btn-secondaire btn-petit" href="#/edt">✏️ Modifier mon emploi du temps</a>
       </div>
       ${(() => {
@@ -444,7 +532,10 @@ function pageAccueil() {
             </button>`).join("")}
         </div>
         <div class="edt-contenu">${rendreOngletJour(ongletJourEdt)}</div>
-        ${Object.values(edt).flat().length ? `<div class="edt-grille-titre">🏫 Mon emploi du temps scolaire</div>` : ""}${rendreGrilleEdt(edt)}`;
+        ${Object.values(edt).flat().length ? `<div class="edt-grille-titre">🏫 Mon emploi du temps scolaire</div>` : ""}${rendreGrilleEdt(edt)}
+
+    <h2 class="titre-section" style="margin-top:26px">📋 Mon plan de révision de la semaine</h2>
+    ${rendrePlanSemaine()}`;
       })()}
     </section>
 
@@ -476,6 +567,7 @@ function pageAccueil() {
     </section>
   `;
   brancherEdtAccueil();
+  brancherPlanSemaine();
   const btnST = document.getElementById("edt-semaine-type");
   if (btnST) btnST.addEventListener("click", () => {
     sauverEdt(JSON.parse(JSON.stringify(SEMAINE_TYPE)));
