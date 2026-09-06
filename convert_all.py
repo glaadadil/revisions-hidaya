@@ -217,6 +217,26 @@ def extraire_carte(secs):
     branches = [b for b in branches if b['t'] and b['f']]
     return {'b': branches[:8]} if branches else None
 
+
+def extraire_texte(md):
+    """Repère le texte de lecture (poème, versets, récit) dans le cours :
+    une ligne-titre mentionnant « نص » ou « Texte », suivie d'un bloc citation."""
+    lines = md.split('\n')
+    for i, line in enumerate(lines):
+        if re.search(r'\*\*(?:نص المقطع|النص القرائي|النص المسترسل|Texte support)', line):
+            j = i + 1
+            while j < len(lines) and not lines[j].strip() and j - i < 4:
+                j += 1  # saute les lignes vides après le titre
+            vers = []
+            while j < len(lines) and lines[j].strip().startswith('>'):
+                v = lines[j].strip().lstrip('>').strip()
+                if v: vers.append(inline(v))
+                j += 1
+            if len(''.join(vers)) > 150:
+                corps = '<br>'.join(vers)
+                return f'<p class="texte-titre">{inline(line.strip())}</p><p class="texte-corps">{corps}</p>'
+    return None
+
 def convertir_doc(path, matiere_id, langue):
     s = io.open(path, encoding='utf-8').read()
     matches = list(RE_LECON.finditer(s))
@@ -340,9 +360,13 @@ def convertir_doc(path, matiere_id, langue):
             'cours': cartes,
             'exercices': exercices
         }
+        md_explication = next((c for k, c in secs.items() if k.startswith('explication')), '')
+        texte_lu = extraire_texte(md_explication)
         carte = extraire_carte(secs)
         if carte:
             lecon['carte'] = carte
+        if texte_lu:
+            lecon['texteLu'] = texte_lu
         if flash:
             lecon['flash'] = flash
         if devoir:

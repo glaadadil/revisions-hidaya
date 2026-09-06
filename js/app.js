@@ -1120,8 +1120,13 @@ function blocCours(b) {
 /* ---------- Onglet Exercices ---------- */
 function rendreExercices(zone, l) {
   const exos = l.exercices || [];
-  if (exos.length === 0) { zone.innerHTML = `<p class="vide-info">Aucun exercice pour l'instant.</p>`; return; }
-  zone.innerHTML = `<p class="sous-titre">Réponds d'abord seul(e) ! La correction apparaît seulement quand tu cliques sur « Corriger ». 😉</p>` +
+  const rtl = profilDe(matiereDuDomaine(l.domaine) || "francais").rtl || l.langue === "ar";
+  const blocTexte = l.texteLu
+    ? `<details class="texte-lu" open><summary>📖 ${rtl ? "نص الدرس — اقرأه قبل أن تجيب" : "Le texte de lecture — lis-le avant de répondre"}</summary><div class="texte-lu-corps">${l.texteLu}</div></details>`
+    : "";
+  if (exos.length === 0) { zone.innerHTML = blocTexte + `<p class="vide-info">Aucun exercice pour l'instant.</p>`; return; }
+  zone.innerHTML = blocTexte +
+    `<p class="sous-titre">Réponds d'abord seul(e) ! La correction apparaît seulement quand tu cliques sur « Corriger ». 😉</p>` +
     exos.map((e, i) => renduExercice(e, i, l)).join("");
   exos.forEach((e, i) => brancherExercice(e, i, l));
 }
@@ -1307,7 +1312,11 @@ function rendreDevoir(zone, l) {
   const d = l.devoir;
   if (!d) { zone.innerHTML = `<p class="vide-info">Pas de devoir pour cette leçon.</p>`; return; }
   const st = chargerProgress().lecons[l.id] || {};
+  const blocTexteDv = l.texteLu
+    ? `<details class="texte-lu" open><summary>📖 Le texte de lecture</summary><div class="texte-lu-corps">${l.texteLu}</div></details>`
+    : "";
   zone.innerHTML = `
+    ${blocTexteDv}
     <div class="devoir-bloc">
       <h2>📝 ${esc(d.titre || "Devoir")}</h2>
       <p>${d.consigne}</p>

@@ -991,3 +991,24 @@ a.cm-feuille:hover { border-color: var(--bc, var(--primaire)); transform: transl
 .sm-legende.st-terminee { background: var(--vert-clair); color: var(--vert-fonce); }
 .sm-legende.st-encours { background: var(--jaune-clair); color: #b45309; }
 .sm-legende.st-aucune { background: var(--gris-clair); color: var(--gris); }
+
+/* ---------- Texte de lecture affiché avec les exercices ---------- */
+.texte-lu {
+  background: var(--blanc); border: 2px solid #e8eaf3; border-radius: 16px;
+  padding: 0; margin-bottom: 16px; box-shadow: var(--ombre); overflow: hidden;
+}
+.texte-lu summary {
+  cursor: pointer; font-weight: 800; font-size: .93rem; color: var(--primaire);
+  padding: 13px 18px; list-style: none; user-select: none;
+  background: linear-gradient(90deg, var(--violet-clair), transparent);
+}
+.texte-lu summary::before { content: "▸ "; }
+.texte-lu[open] summary::before { content: "▾ "; }
+.texte-lu[open] summary { border-bottom: 1px solid #eef0f7; }
+.texte-lu-corps {
+  padding: 16px 20px; max-height: 340px; overflow-y: auto;
+  font-size: .98rem; line-height: 1.9;
+}
+.texte-lu-corps .texte-titre { font-weight: 800; color: var(--encre); margin-bottom: 10px; }
+.texte-lu-corps .texte-corps { color: var(--encre); }
+.texte-lu-corps strong { color: var(--primaire); }
