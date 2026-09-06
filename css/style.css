@@ -1012,3 +1012,8 @@ a.cm-feuille:hover { border-color: var(--bc, var(--primaire)); transform: transl
 .texte-lu-corps .texte-titre { font-weight: 800; color: var(--encre); margin-bottom: 10px; }
 .texte-lu-corps .texte-corps { color: var(--encre); }
 .texte-lu-corps strong { color: var(--primaire); }
+
+/* Séance planifiée déjà faite (accueil) */
+.edt-carte.tache-faite { background: var(--vert-clair); border-color: var(--vert); }
+.edt-carte.tache-faite .edt-nom { text-decoration: line-through; color: var(--vert-fonce); }
+.edt-grille-titre { font-weight: 800; color: var(--encre-doux); font-size: .9rem; margin: 20px 0 4px; }
