@@ -931,3 +931,63 @@ a.cm-feuille:hover { border-color: var(--bc, var(--primaire)); transform: transl
   .cmx-noeud.racine .cmx-carte { max-width: 240px; }
   .cmg-enfants { gap: 10px; }
 }
+
+/* ---------- Sommaire dépliable du programme ---------- */
+.sommaire { display: flex; flex-direction: column; gap: 10px; }
+.sm-item {
+  background: var(--blanc); border-radius: 16px; overflow: hidden;
+  border: 1px solid #eef0f7; box-shadow: var(--ombre);
+}
+.sm-tete {
+  width: 100%; display: flex; align-items: center; gap: 12px;
+  border: none; background: var(--blanc); cursor: pointer;
+  padding: 13px 16px; font-family: inherit; text-align: left;
+  border-left: 6px solid var(--uc, var(--primaire));
+  transition: background .15s;
+}
+.sm-tete:hover { background: color-mix(in srgb, var(--uc, var(--primaire)) 6%, #fff); }
+.sm-num {
+  flex-shrink: 0; width: 30px; height: 30px; border-radius: 10px;
+  background: var(--uc, var(--primaire)); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: .85rem;
+}
+.sm-nom {
+  flex: 1; font-weight: 800; font-size: .95rem; color: var(--encre);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sm-meta { font-size: .78rem; font-weight: 800; color: var(--gris); background: var(--gris-clair); border-radius: 999px; padding: 4px 11px; white-space: nowrap; }
+.sm-chev { flex-shrink: 0; width: 22px; height: 22px; color: var(--uc, var(--primaire)); display: flex; align-items: center; justify-content: center; transition: transform .2s; }
+.sm-chev svg { width: 15px; height: 15px; }
+.sm-tete.ouvert .sm-chev { transform: rotate(90deg); }
+
+.sm-lecons {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 4px 14px 14px 22px;
+  border-left: 6px solid var(--uc, var(--primaire));
+  margin: -2px 0 0 0;
+  animation: sm-apparait .22s ease;
+}
+.sm-lecons[hidden] { display: none; }
+@keyframes sm-apparait { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: none; } }
+.sm-lecon {
+  display: flex; align-items: center; gap: 9px;
+  text-decoration: none; color: var(--encre);
+  background: #f8f9fe; border: 1px solid #e8eaf3; border-radius: 11px;
+  padding: 9px 13px; font-size: .86rem; font-weight: 700;
+  transition: all .13s;
+}
+.sm-lecon:hover { border-color: var(--uc, var(--primaire)); transform: translateX(3px); }
+.sm-lecon b { color: var(--uc, var(--primaire)); font-weight: 900; flex-shrink: 0; }
+.sm-lecon-titre { flex: 1; line-height: 1.35; }
+.sm-st { flex-shrink: 0; font-weight: 900; }
+.sm-lecon.st-terminee { background: var(--vert-clair); border-color: var(--vert); }
+.sm-lecon.st-terminee .sm-st { color: var(--vert-fonce); }
+.sm-lecon.st-terminee .sm-lecon-titre { color: var(--vert-fonce); }
+.sm-lecon.st-encours { background: var(--jaune-clair); border-color: var(--jaune); }
+.sm-lecon.st-encours .sm-st { color: #b45309; }
+.sm-lecon.st-aucune .sm-st { color: #94a3b8; }
+.sm-legende { display: inline-block; border-radius: 999px; padding: 3px 12px; font-size: .75rem; font-weight: 800; margin: 0 3px; }
+.sm-legende.st-terminee { background: var(--vert-clair); color: var(--vert-fonce); }
+.sm-legende.st-encours { background: var(--jaune-clair); color: #b45309; }
+.sm-legende.st-aucune { background: var(--gris-clair); color: var(--gris); }
